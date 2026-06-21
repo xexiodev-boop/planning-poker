@@ -56,25 +56,78 @@ const created = await request("/api/rooms", {
   method: "POST",
   body: JSON.stringify({ name: "Alex", deckId: "fibonacci" }),
 });
+assert.match(created.roomId, /^[a-z]+-[a-z]+-[a-z]+-[a-f0-9]{6}$/);
 const joined = await request(`/api/rooms/${created.roomId}/join`, {
   method: "POST",
   body: JSON.stringify({ name: "Alex" }),
 });
+const observerJoined = await request(`/api/rooms/${created.roomId}/join`, {
+  method: "POST",
+  body: JSON.stringify({ name: "Sam" }),
+});
 
 const facilitator = roomSocket(created.roomId, created.token);
 const participant = roomSocket(created.roomId, joined.token);
+const observer = roomSocket(created.roomId, observerJoined.token);
 
-const lobby = await facilitator.waitFor((room) => room.participants.length === 2);
+const lobby = await facilitator.waitFor((room) => room.participants.length === 3);
+assert.equal(created.roomId.startsWith(`${lobby.name.toLowerCase().replaceAll(" ", "-")}-`), true);
 assert.equal(lobby.viewer.role, "facilitator");
 assert.notEqual(lobby.participants[0].displayName, lobby.participants[1].displayName);
 assert.match(lobby.participants[0].displayName, /^Alex - [a-f0-9]{5}$/);
+const observerPerson = lobby.participants.find((person) => person.displayName.startsWith("Sam - "));
+facilitator.send({
+  type: "set_participant_role",
+  participantId: observerPerson.id,
+  role: "observer",
+});
+const observerConfigured = await observer.waitFor((room) => room.viewer.role === "observer");
+assert.equal(observerConfigured.participants.find((person) => person.id === observerPerson.id).role, "observer");
 
-facilitator.send({ type: "start_round", title: "Smoke test task" });
-await participant.waitFor((room) => room.currentRound?.phase === "voting");
+facilitator.send({
+  type: "update_settings",
+  cards: ["1", "3", "5", "8", "13", "?"],
+  suggestionAlgorithm: "middle_ground",
+  revealDelaySeconds: 15,
+});
+const configured = await participant.waitFor(
+  (room) => room.settings?.suggestionAlgorithm === "middle_ground",
+);
+assert.deepEqual(configured.deck.cards, ["1", "3", "5", "8", "13", "?"]);
+assert.equal(configured.settings.revealDelaySeconds, 15);
 
-facilitator.send({ type: "select_vote", value: "5" });
+facilitator.send({
+  type: "add_items",
+  titles: ["Smoke test task", "Second backlog item"],
+});
+const withBacklog = await participant.waitFor(
+  (room) => room.items.filter((item) => item.status === "pending").length === 2,
+);
+const selectedItem = withBacklog.items.find((item) => item.title === "Smoke test task");
+assert.ok(selectedItem);
+
+facilitator.send({ type: "start_round", itemId: selectedItem.id });
+const voting = await participant.waitFor((room) => room.currentRound?.phase === "voting");
+assert.equal(voting.currentRound.title, "Smoke test task");
+assert.equal(voting.currentRound.itemId, selectedItem.id);
+assert.equal(voting.participants.filter((person) => person.eligible).length, 2);
+
+facilitator.send({ type: "remove_participant", participantId: observerPerson.id });
+const observerRemoved = await participant.waitFor((room) => room.participants.length === 2);
+assert.equal(observerRemoved.participants.some((person) => person.id === observerPerson.id), false);
+
+facilitator.send({ type: "update_round_title", title: "Renamed smoke test task" });
+const renamed = await participant.waitFor(
+  (room) => room.currentRound?.title === "Renamed smoke test task",
+);
+assert.equal(
+  renamed.items.find((item) => item.id === selectedItem.id).title,
+  "Renamed smoke test task",
+);
+
+facilitator.send({ type: "select_vote", value: "3" });
 facilitator.send({ type: "confirm_vote" });
-participant.send({ type: "select_vote", value: "8" });
+participant.send({ type: "select_vote", value: "13" });
 participant.send({ type: "confirm_vote" });
 await facilitator.waitFor((room) => room.currentRound?.revealAllowed);
 
@@ -82,12 +135,86 @@ facilitator.send({ type: "reveal" });
 const revealed = await facilitator.waitFor((room) => room.currentRound?.phase === "revealed");
 assert.equal(revealed.currentRound.suggestion.value, "8");
 assert.equal(revealed.currentRound.suggestion.tied, true);
+assert.equal(revealed.currentRound.suggestion.algorithm, "middle_ground");
+
+facilitator.send({ type: "restart_voting" });
+const restarted = await participant.waitFor(
+  (room) => room.currentRound?.phase === "voting" && !room.currentRound.ownVote?.value,
+);
+assert.equal(restarted.participants.some((person) => person.hasVoted), false);
+
+facilitator.send({ type: "select_vote", value: "5" });
+facilitator.send({ type: "confirm_vote" });
+participant.send({ type: "select_vote", value: "8" });
+participant.send({ type: "confirm_vote" });
+await facilitator.waitFor((room) => room.currentRound?.revealAllowed);
+facilitator.send({ type: "reveal" });
+await facilitator.waitFor((room) => room.currentRound?.phase === "revealed");
 
 facilitator.send({ type: "finalize", value: "8" });
 const finalized = await participant.waitFor((room) => room.currentRound?.phase === "finalized");
 assert.equal(finalized.history[0].finalValue, "8");
+assert.equal(finalized.history[0].title, "Renamed smoke test task");
 assert.equal(finalized.history[0].votes.length, 2);
+assert.equal(finalized.history[0].metrics.consensusPercent, 50);
+assert.equal(finalized.history[0].metrics.low, "5");
+assert.equal(finalized.history[0].metrics.high, "8");
+assert.equal(finalized.history[0].metrics.spread, 1);
+assert.deepEqual(finalized.history[0].deckCards, ["1", "3", "5", "8", "13", "?"]);
+assert.equal(
+  finalized.items.find((item) => item.id === selectedItem.id).status,
+  "estimated",
+);
+assert.deepEqual(
+  finalized.items.filter((item) => item.status === "pending").map((item) => item.title),
+  ["Second backlog item"],
+);
+
+const secondItem = finalized.items.find((item) => item.title === "Second backlog item");
+facilitator.send({ type: "start_round", itemId: secondItem.id });
+await participant.waitFor((room) => room.currentRound?.itemId === secondItem.id);
+facilitator.send({ type: "cancel_round" });
+const cancelled = await participant.waitFor((room) => room.currentRound === null);
+assert.equal(
+  cancelled.items.find((item) => item.id === secondItem.id).status,
+  "pending",
+);
+
+facilitator.send({
+  type: "transfer_facilitator",
+  participantId: cancelled.viewer.id,
+});
+const transferred = await participant.waitFor((room) => room.viewer.role === "facilitator");
+assert.equal(
+  transferred.participants.find((person) => person.id === lobby.viewer.id).role,
+  "participant",
+);
+
+participant.send({ type: "set_room_lock", locked: true });
+await facilitator.waitFor((room) => room.isLocked);
+await assert.rejects(
+  request(`/api/rooms/${created.roomId}/join`, {
+    method: "POST",
+    body: JSON.stringify({ name: "Late guest" }),
+  }),
+  /not accepting new participants/,
+);
+
+participant.send({ type: "set_room_lock", locked: false });
+await facilitator.waitFor((room) => !room.isLocked);
+
+participant.send({ type: "close_room" });
+const closed = await facilitator.waitFor((room) => room.isClosed);
+assert.equal(closed.isLocked, true);
+await assert.rejects(
+  request(`/api/rooms/${created.roomId}/join`, {
+    method: "POST",
+    body: JSON.stringify({ name: "Too late" }),
+  }),
+  /closed/,
+);
 
 facilitator.close();
 participant.close();
+observer.close();
 console.log(`Smoke test passed for ${lobby.name} (${created.roomId}).`);

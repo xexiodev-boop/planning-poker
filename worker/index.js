@@ -1,7 +1,16 @@
 import { getDeck } from "../shared/decks.js";
 
 const ROOM_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000;
-const REVEAL_DELAY_MS = 30 * 1000;
+const DEFAULT_REVEAL_DELAY_SECONDS = 30;
+const ALLOWED_REVEAL_DELAYS = new Set([0, 15, 30, 60, 90]);
+const ALLOWED_SUGGESTION_ALGORITHMS = new Set([
+  "most_votes",
+  "middle_ground",
+  "median",
+  "average_up",
+  "highest",
+  "none",
+]);
 const COLORS = [
   "#ef6a5b",
   "#5b8def",
@@ -32,8 +41,16 @@ function randomHex(length = 5) {
     .slice(0, length);
 }
 
-function randomRoomId() {
-  return `${randomHex(8)}${randomHex(8)}`;
+function randomRoomName() {
+  return `${randomItem(ADJECTIVES)} ${randomItem(COLORS_AS_WORDS)} ${randomItem(ANIMALS)}`;
+}
+
+function roomSlug(name) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+function randomRoomId(name) {
+  return `${roomSlug(name)}-${randomHex(6)}`;
 }
 
 function cleanName(value) {
@@ -43,6 +60,30 @@ function cleanName(value) {
 
 function cleanTitle(value) {
   return String(value ?? "").trim().replace(/\s+/g, " ").slice(0, 160);
+}
+
+function cleanItemTitles(values) {
+  if (!Array.isArray(values)) throw new Error("Items must be provided as a list.");
+  const titles = values.map(cleanTitle).filter(Boolean);
+  if (titles.length === 0) throw new Error("Add at least one item.");
+  if (titles.length > 100) throw new Error("Add no more than 100 items at a time.");
+  return titles;
+}
+
+function cleanCards(cards) {
+  if (!Array.isArray(cards)) throw new Error("Cards must be provided as a list.");
+  const cleaned = cards
+    .map((card) => String(card ?? "").trim().slice(0, 12))
+    .filter(Boolean);
+  if (cleaned.length < 2) throw new Error("A deck needs at least two cards.");
+  if (cleaned.length > 24) throw new Error("A deck can contain at most 24 cards.");
+  if (new Set(cleaned).size !== cleaned.length) throw new Error("Deck cards must be unique.");
+  return cleaned;
+}
+
+function cloneDeck(deckId) {
+  const deck = getDeck(deckId);
+  return { ...deck, cards: [...deck.cards] };
 }
 
 function newParticipant(name, role, index) {
@@ -66,26 +107,102 @@ function findParticipantByToken(room, token) {
   return room.participants.find((participant) => participant.token === token);
 }
 
-function calculateSuggestion(round, deck) {
-  const tally = new Map();
+function cardIndex(deck, value) {
+  return deck.cards.indexOf(value);
+}
 
-  Object.values(round.votes).forEach((vote) => {
-    if (!vote?.confirmed || vote.value === "?" || vote.value === "☕") return;
-    tally.set(vote.value, (tally.get(vote.value) ?? 0) + 1);
+function parseNumericCard(value) {
+  if (value === "½") return 0.5;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function calculateSuggestion(round, deck, algorithm) {
+  if (algorithm === "none") return null;
+
+  const values = Object.values(round.votes)
+    .filter((vote) => vote?.confirmed && vote.value !== "?" && vote.value !== "☕")
+    .map((vote) => vote.value)
+    .filter((value) => cardIndex(deck, value) >= 0);
+
+  if (values.length === 0) return null;
+
+  const tally = new Map();
+  values.forEach((value) => {
+    tally.set(value, (tally.get(value) ?? 0) + 1);
   });
 
-  if (tally.size === 0) return null;
+  if (algorithm === "highest") {
+    const value = [...values].sort((a, b) => cardIndex(deck, a) - cardIndex(deck, b)).at(-1);
+    return { value, algorithm, tied: false };
+  }
+
+  if (algorithm === "median") {
+    const ordered = [...values].sort((a, b) => cardIndex(deck, a) - cardIndex(deck, b));
+    return { value: ordered[Math.floor(ordered.length / 2)], algorithm, tied: false };
+  }
+
+  if (algorithm === "average_up") {
+    const numericCards = deck.cards
+      .map((value) => ({ value, number: parseNumericCard(value) }))
+      .filter((card) => card.number !== null)
+      .sort((a, b) => a.number - b.number);
+    const numericVotes = values.map(parseNumericCard).filter((value) => value !== null);
+    if (numericCards.length === 0 || numericVotes.length === 0) return null;
+    const average = numericVotes.reduce((total, value) => total + value, 0) / numericVotes.length;
+    const selected = numericCards.find((card) => card.number >= average) ?? numericCards.at(-1);
+    return { value: selected.value, algorithm, average, tied: false };
+  }
 
   const highestCount = Math.max(...tally.values());
   const tied = [...tally.entries()]
     .filter(([, count]) => count === highestCount)
     .map(([value]) => value);
-  const ordered = tied.sort((a, b) => deck.cards.indexOf(a) - deck.cards.indexOf(b));
+  const ordered = tied.sort((a, b) => cardIndex(deck, a) - cardIndex(deck, b));
+
+  if (algorithm === "middle_ground" && ordered.length > 1) {
+    const firstIndex = cardIndex(deck, ordered[0]);
+    const lastIndex = cardIndex(deck, ordered.at(-1));
+    return {
+      value: deck.cards[Math.round((firstIndex + lastIndex) / 2)],
+      votes: highestCount,
+      algorithm,
+      tied: true,
+    };
+  }
 
   return {
     value: ordered.at(-1),
     votes: highestCount,
+    algorithm,
     tied: ordered.length > 1,
+  };
+}
+
+function calculateResultMetrics(round, deck) {
+  const confirmedValues = Object.values(round.votes)
+    .filter((vote) => vote?.confirmed)
+    .map((vote) => vote.value);
+  if (confirmedValues.length === 0) {
+    return { voteCount: 0, consensusPercent: 0, unanimous: false, low: null, high: null, spread: 0 };
+  }
+
+  const counts = new Map();
+  confirmedValues.forEach((value) => counts.set(value, (counts.get(value) ?? 0) + 1));
+  const highestCount = Math.max(...counts.values());
+  const orderedValues = confirmedValues
+    .filter((value) => value !== "?" && value !== "☕" && deck.cards.includes(value))
+    .sort((a, b) => deck.cards.indexOf(a) - deck.cards.indexOf(b));
+  const low = orderedValues[0] ?? null;
+  const high = orderedValues.at(-1) ?? null;
+
+  return {
+    voteCount: confirmedValues.length,
+    consensusPercent: Math.round((highestCount / confirmedValues.length) * 100),
+    unanimous: counts.size === 1,
+    low,
+    high,
+    spread: low && high ? deck.cards.indexOf(high) - deck.cards.indexOf(low) : 0,
   };
 }
 
@@ -95,13 +212,15 @@ export default {
 
     if (url.pathname === "/api/rooms" && request.method === "POST") {
       const input = await request.json().catch(() => ({}));
-      const roomId = randomRoomId();
+      const roomName = randomRoomName();
+      const roomId = randomRoomId(roomName);
       const objectId = env.ROOMS.idFromName(roomId);
       const stub = env.ROOMS.get(objectId);
       const response = await stub.fetch("https://room.internal/create", {
         method: "POST",
         body: JSON.stringify({
           roomId,
+          roomName,
           facilitatorName: input.name,
           deckId: input.deckId,
         }),
@@ -109,7 +228,9 @@ export default {
       return response;
     }
 
-    const match = url.pathname.match(/^\/api\/rooms\/([a-f0-9]{16})(?:\/(join|socket|state))?$/);
+    const match = url.pathname.match(
+      /^\/api\/rooms\/([a-f0-9]{16}|[a-z0-9]+(?:-[a-z0-9]+){3})(?:\/(join|socket|state))?$/,
+    );
     if (!match) {
       return json({ error: "Not found" }, 404);
     }
@@ -129,7 +250,16 @@ export class PlanningRoom {
   }
 
   async loadRoom() {
-    return this.ctx.storage.get("room");
+    const room = await this.ctx.storage.get("room");
+    if (!room) return room;
+    room.deck ??= cloneDeck(room.deckId);
+    room.settings ??= {};
+    room.settings.suggestionAlgorithm ??= "most_votes";
+    room.settings.revealDelaySeconds ??= DEFAULT_REVEAL_DELAY_SECONDS;
+    room.isLocked ??= false;
+    room.isClosed ??= false;
+    room.items ??= [];
+    return room;
   }
 
   async saveRoom(room, { touch = true } = {}) {
@@ -143,7 +273,9 @@ export class PlanningRoom {
 
   async scheduleNextAlarm(room) {
     const wakeAt =
-      room.currentRound?.phase === "voting" && !room.currentRound.revealAllowed
+      room.currentRound?.phase === "voting" &&
+      !room.currentRound.revealAllowed &&
+      room.currentRound.revealAvailableAt
         ? Math.min(room.currentRound.revealAvailableAt, room.expiresAt)
         : room.expiresAt;
     await this.ctx.storage.setAlarm(wakeAt);
@@ -188,12 +320,20 @@ export class PlanningRoom {
     const now = Date.now();
     const room = {
       id: input.roomId,
-      name: `${randomItem(ADJECTIVES)} ${randomItem(COLORS_AS_WORDS)} ${randomItem(ANIMALS)}`,
+      name: input.roomName || randomRoomName(),
       deckId: getDeck(input.deckId).id,
+      deck: cloneDeck(input.deckId),
+      settings: {
+        suggestionAlgorithm: "most_votes",
+        revealDelaySeconds: DEFAULT_REVEAL_DELAY_SECONDS,
+      },
+      isLocked: false,
+      isClosed: false,
       createdAt: now,
       updatedAt: now,
       expiresAt: now + ROOM_LIFETIME_MS,
       participants: [facilitator],
+      items: [],
       currentRound: null,
       history: [],
     };
@@ -216,6 +356,9 @@ export class PlanningRoom {
         participantId: returning.id,
       });
     }
+
+    if (room.isClosed) return json({ error: "This room has been closed." }, 423);
+    if (room.isLocked) return json({ error: "This room is not accepting new participants." }, 423);
 
     const participant = newParticipant(input.name, "participant", room.participants.length);
     room.participants.push(participant);
@@ -299,6 +442,7 @@ export class PlanningRoom {
     if (
       room.currentRound?.phase === "voting" &&
       !room.currentRound.revealAllowed &&
+      room.currentRound.revealAvailableAt &&
       room.currentRound.revealAvailableAt <= Date.now()
     ) {
       room.currentRound.revealAllowed = true;
@@ -312,29 +456,196 @@ export class PlanningRoom {
 
   async applyAction(room, participant, event) {
     const isFacilitator = participant.role === "facilitator";
-    const deck = getDeck(room.deckId);
+    const deck = room.deck;
+
+    if (room.isClosed) throw new Error("This room is closed and can only be viewed.");
 
     switch (event.type) {
+      case "update_settings": {
+        if (!isFacilitator) throw new Error("Only the facilitator can change room settings.");
+        if (room.currentRound && room.currentRound.phase !== "finalized") {
+          throw new Error("Room settings can only change between rounds.");
+        }
+
+        if (event.cards) room.deck.cards = cleanCards(event.cards);
+        if (event.suggestionAlgorithm) {
+          if (!ALLOWED_SUGGESTION_ALGORITHMS.has(event.suggestionAlgorithm)) {
+            throw new Error("Unknown suggestion algorithm.");
+          }
+          room.settings.suggestionAlgorithm = event.suggestionAlgorithm;
+        }
+        if (event.revealDelaySeconds !== undefined) {
+          const delay = Number(event.revealDelaySeconds);
+          if (!ALLOWED_REVEAL_DELAYS.has(delay)) throw new Error("Unsupported reveal timer.");
+          room.settings.revealDelaySeconds = delay;
+        }
+        break;
+      }
+
+      case "set_room_lock": {
+        if (!isFacilitator) throw new Error("Only the facilitator can lock the room.");
+        room.isLocked = Boolean(event.locked);
+        break;
+      }
+
+      case "set_participant_role": {
+        if (!isFacilitator) throw new Error("Only the facilitator can change participant roles.");
+        if (room.currentRound && room.currentRound.phase !== "finalized") {
+          throw new Error("Roles can only change between rounds.");
+        }
+        const target = room.participants.find(({ id }) => id === event.participantId);
+        if (!target || target.role === "facilitator") {
+          throw new Error("That participant cannot be changed.");
+        }
+        if (!["participant", "observer"].includes(event.role)) {
+          throw new Error("Unknown participant role.");
+        }
+        target.role = event.role;
+        break;
+      }
+
+      case "transfer_facilitator": {
+        if (!isFacilitator) throw new Error("Only the facilitator can transfer ownership.");
+        if (room.currentRound && room.currentRound.phase !== "finalized") {
+          throw new Error("Facilitator ownership can only transfer between rounds.");
+        }
+        const target = room.participants.find(({ id }) => id === event.participantId);
+        if (!target || target.id === participant.id) {
+          throw new Error("Choose another person to become facilitator.");
+        }
+        participant.role = "participant";
+        target.role = "facilitator";
+        break;
+      }
+
+      case "remove_participant": {
+        if (!isFacilitator) throw new Error("Only the facilitator can remove participants.");
+        const target = room.participants.find(({ id }) => id === event.participantId);
+        if (!target || target.role === "facilitator") {
+          throw new Error("That participant cannot be removed.");
+        }
+        room.participants = room.participants.filter(({ id }) => id !== target.id);
+        if (room.currentRound && room.currentRound.phase !== "finalized") {
+          room.currentRound.eligibleParticipantIds =
+            room.currentRound.eligibleParticipantIds.filter((id) => id !== target.id);
+          delete room.currentRound.votes[target.id];
+          const everyoneConfirmed = room.currentRound.eligibleParticipantIds.every(
+            (id) => room.currentRound.votes[id]?.confirmed,
+          );
+          if (everyoneConfirmed) room.currentRound.revealAllowed = true;
+        }
+        break;
+      }
+
+      case "add_items": {
+        if (!isFacilitator) throw new Error("Only the facilitator can add estimation items.");
+        if (room.currentRound && room.currentRound.phase !== "finalized") {
+          throw new Error("Items can only be changed between rounds.");
+        }
+        const existingTitles = new Set(
+          room.items.filter((item) => item.status === "pending").map((item) => item.title.toLowerCase()),
+        );
+        for (const title of cleanItemTitles(event.titles)) {
+          if (existingTitles.has(title.toLowerCase())) continue;
+          room.items.push({
+            id: crypto.randomUUID(),
+            title,
+            status: "pending",
+            createdAt: Date.now(),
+          });
+          existingTitles.add(title.toLowerCase());
+        }
+        break;
+      }
+
+      case "remove_item": {
+        if (!isFacilitator) throw new Error("Only the facilitator can remove estimation items.");
+        if (room.currentRound && room.currentRound.phase !== "finalized") {
+          throw new Error("Items can only be changed between rounds.");
+        }
+        const item = room.items.find(({ id }) => id === event.itemId);
+        if (!item || item.status !== "pending") throw new Error("That pending item was not found.");
+        room.items = room.items.filter(({ id }) => id !== item.id);
+        break;
+      }
+
+      case "close_room": {
+        if (!isFacilitator) throw new Error("Only the facilitator can close the room.");
+        if (room.currentRound && room.currentRound.phase !== "finalized") {
+          throw new Error("Finish the current round before closing the room.");
+        }
+        room.isClosed = true;
+        room.isLocked = true;
+        room.closedAt = Date.now();
+        break;
+      }
+
       case "start_round": {
         if (!isFacilitator) throw new Error("Only the facilitator can start a round.");
         if (room.currentRound && room.currentRound.phase !== "finalized") {
           throw new Error("Finish the current round first.");
         }
-        const title = cleanTitle(event.title);
+        const selectedItem = event.itemId
+          ? room.items.find(({ id, status }) => id === event.itemId && status === "pending")
+          : null;
+        if (event.itemId && !selectedItem) throw new Error("That item is no longer pending.");
+        const title = selectedItem?.title ?? cleanTitle(event.title);
         if (!title) throw new Error("Enter a task title.");
         const now = Date.now();
+        const revealDelayMs = room.settings.revealDelaySeconds * 1000;
         room.currentRound = {
           id: crypto.randomUUID(),
+          itemId: selectedItem?.id ?? null,
           title,
           phase: "voting",
           startedAt: now,
-          revealAvailableAt: now + REVEAL_DELAY_MS,
+          revealAvailableAt: revealDelayMs ? now + revealDelayMs : null,
           revealAllowed: false,
-          eligibleParticipantIds: room.participants.map(({ id }) => id),
+          eligibleParticipantIds: room.participants
+            .filter(({ role }) => role !== "observer")
+            .map(({ id }) => id),
           votes: {},
           suggestion: null,
           finalValue: null,
         };
+        break;
+      }
+
+      case "update_round_title": {
+        if (!isFacilitator) throw new Error("Only the facilitator can edit the item title.");
+        const round = room.currentRound;
+        if (!round || round.phase === "finalized") throw new Error("There is no active round to edit.");
+        const title = cleanTitle(event.title);
+        if (!title) throw new Error("Enter an item title.");
+        round.title = title;
+        if (round.itemId) {
+          const item = room.items.find(({ id }) => id === round.itemId);
+          if (item) item.title = title;
+        }
+        break;
+      }
+
+      case "restart_voting": {
+        if (!isFacilitator) throw new Error("Only the facilitator can restart voting.");
+        const round = room.currentRound;
+        if (!round || round.phase === "finalized") throw new Error("There is no active round to restart.");
+        const now = Date.now();
+        const revealDelayMs = room.settings.revealDelaySeconds * 1000;
+        round.phase = "voting";
+        round.startedAt = now;
+        round.revealAvailableAt = revealDelayMs ? now + revealDelayMs : null;
+        round.revealAllowed = false;
+        round.votes = {};
+        round.suggestion = null;
+        round.revealedAt = null;
+        break;
+      }
+
+      case "cancel_round": {
+        if (!isFacilitator) throw new Error("Only the facilitator can cancel a round.");
+        const round = room.currentRound;
+        if (!round || round.phase === "finalized") throw new Error("There is no active round to cancel.");
+        room.currentRound = null;
         break;
       }
 
@@ -371,7 +682,12 @@ export class PlanningRoom {
         if (!round || round.phase !== "voting") throw new Error("There is no voting round to reveal.");
         round.phase = "revealed";
         round.revealedAt = Date.now();
-        round.suggestion = calculateSuggestion(round, deck);
+        round.suggestion = calculateSuggestion(
+          round,
+          deck,
+          room.settings.suggestionAlgorithm,
+        );
+        round.metrics = calculateResultMetrics(round, deck);
         break;
       }
 
@@ -384,12 +700,24 @@ export class PlanningRoom {
         round.phase = "finalized";
         round.finalValue = finalValue.slice(0, 24);
         round.completedAt = Date.now();
+        if (round.itemId) {
+          const item = room.items.find(({ id }) => id === round.itemId);
+          if (item) {
+            item.status = "estimated";
+            item.finalValue = round.finalValue;
+            item.completedAt = round.completedAt;
+          }
+        }
         room.history.unshift({
           id: round.id,
+          itemId: round.itemId,
           title: round.title,
           startedAt: round.startedAt,
           completedAt: round.completedAt,
           suggestion: round.suggestion,
+          metrics: round.metrics,
+          deckCards: [...deck.cards],
+          suggestionAlgorithm: room.settings.suggestionAlgorithm,
           finalValue: round.finalValue,
           votes: round.eligibleParticipantIds.map((participantId) => {
             const voter = room.participants.find(({ id }) => id === participantId);
@@ -417,7 +745,12 @@ export class PlanningRoom {
     return {
       id: room.id,
       name: room.name,
-      deck: getDeck(room.deckId),
+      deck: room.deck,
+      settings: room.settings,
+      isLocked: room.isLocked,
+      isClosed: room.isClosed,
+      closedAt: room.closedAt ?? null,
+      items: room.items,
       expiresAt: room.expiresAt,
       viewer: {
         id: viewer.id,
@@ -438,12 +771,14 @@ export class PlanningRoom {
       currentRound: round
         ? {
             id: round.id,
+            itemId: round.itemId ?? null,
             title: round.title,
             phase: round.phase,
             startedAt: round.startedAt,
             revealAvailableAt: round.revealAvailableAt,
             revealAllowed: round.revealAllowed,
             suggestion: votesVisible ? round.suggestion : null,
+            metrics: votesVisible ? round.metrics : null,
             finalValue: round.finalValue,
             ownVote: votesVisible || ownVote
               ? { value: ownVote?.value ?? null, confirmed: ownVote?.confirmed ?? false }
@@ -459,7 +794,10 @@ export class PlanningRoom {
       if (socket === excludedSocket) continue;
       const token = socket.deserializeAttachment()?.token;
       const viewer = findParticipantByToken(room, token);
-      if (!viewer) continue;
+      if (!viewer) {
+        socket.close(4001, "Removed from room");
+        continue;
+      }
       try {
         socket.send(JSON.stringify({ type: "state", room: this.roomView(room, viewer) }));
       } catch {
