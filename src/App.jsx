@@ -1102,63 +1102,65 @@ function ResultDetail({ item, onClose }) {
   });
 
   return (
-    <div className="results-screen">
-      <header>
-        <button className="back-button" onClick={onClose} type="button">← Back to room</button>
-        <div>
-          <p className="eyebrow">Completed estimate</p>
-          <h1>{item.title}</h1>
-          <p>{new Date(item.completedAt).toLocaleString()}</p>
-        </div>
-        <span className="completed-estimate">{item.finalValue}</span>
-      </header>
-      <main className="result-detail">
-        <section className="result-detail-summary">
+    <div className="workspace-backdrop" onMouseDown={onClose}>
+      <section className="results-screen workspace-modal" onMouseDown={(event) => event.stopPropagation()}>
+        <header>
+          <button className="back-button" onClick={onClose} type="button">← Close details</button>
           <div>
-            <span>Final estimate</span>
-            <strong>{item.finalValue}</strong>
+            <p className="eyebrow">Completed estimate</p>
+            <h1>{item.title}</h1>
+            <p>{new Date(item.completedAt).toLocaleString()}</p>
           </div>
-          <div>
-            <span>App suggestion</span>
-            <strong>{item.suggestion?.value ?? "None"}</strong>
-          </div>
-          <div>
-            <span>Agreement</span>
-            <strong>{item.metrics ? `${item.metrics.consensusPercent}%` : "—"}</strong>
-          </div>
-          <div>
-            <span>Vote range</span>
-            <strong>
-              {item.metrics?.low
-                ? item.metrics.low === item.metrics.high ? item.metrics.low : `${item.metrics.low}–${item.metrics.high}`
-                : "—"}
-            </strong>
-          </div>
-        </section>
-        <section className="vote-breakdown">
-          <div>
-            <p className="eyebrow">Vote breakdown</p>
-            <h2>How the team voted</h2>
-          </div>
-          <div className="breakdown-bars">
-            {[...counts.entries()].map(([value, count]) => (
-              <div key={value}>
-                <strong>{value}</strong>
-                <span><i style={{ width: `${(count / item.votes.length) * 100}%` }} /></span>
-                <b>{count}</b>
-              </div>
-            ))}
-          </div>
-          <ol className="result-voter-list">
-            {item.votes.map((vote) => (
-              <li key={vote.participantId}>
-                <span>{vote.participantName}</span>
-                <strong>{vote.value ?? "No vote"}</strong>
-              </li>
-            ))}
-          </ol>
-        </section>
-      </main>
+          <span className="completed-estimate">{item.finalValue}</span>
+        </header>
+        <main className="result-detail">
+          <section className="result-detail-summary">
+            <div>
+              <span>Final estimate</span>
+              <strong>{item.finalValue}</strong>
+            </div>
+            <div>
+              <span>App suggestion</span>
+              <strong>{item.suggestion?.value ?? "None"}</strong>
+            </div>
+            <div>
+              <span>Agreement</span>
+              <strong>{item.metrics ? `${item.metrics.consensusPercent}%` : "—"}</strong>
+            </div>
+            <div>
+              <span>Vote range</span>
+              <strong>
+                {item.metrics?.low
+                  ? item.metrics.low === item.metrics.high ? item.metrics.low : `${item.metrics.low}–${item.metrics.high}`
+                  : "—"}
+              </strong>
+            </div>
+          </section>
+          <section className="vote-breakdown">
+            <div>
+              <p className="eyebrow">Vote breakdown</p>
+              <h2>How the team voted</h2>
+            </div>
+            <div className="breakdown-bars">
+              {[...counts.entries()].map(([value, count]) => (
+                <div key={value}>
+                  <strong>{value}</strong>
+                  <span><i style={{ width: `${(count / item.votes.length) * 100}%` }} /></span>
+                  <b>{count}</b>
+                </div>
+              ))}
+            </div>
+            <ol className="result-voter-list">
+              {item.votes.map((vote) => (
+                <li key={vote.participantId}>
+                  <span>{vote.participantName}</span>
+                  <strong>{vote.value ?? "No vote"}</strong>
+                </li>
+              ))}
+            </ol>
+          </section>
+        </main>
+      </section>
     </div>
   );
 }
@@ -1447,25 +1449,26 @@ function ItemManager({ room, send, onClose }) {
   }
 
   return (
-    <div className="items-screen">
-      <header className="items-screen-header">
-        <button className="back-button" onClick={onClose} type="button">← Back to room</button>
-        <div>
-          <p className="eyebrow">Estimation queue</p>
-          <h1>Items to estimate</h1>
-          <p>Prepare the session before voting starts. Add one item per line.</p>
-        </div>
-        <span className="items-room-name">{room.name}</span>
-      </header>
+    <div className="workspace-backdrop" onMouseDown={onClose}>
+      <section className="items-screen workspace-modal" onMouseDown={(event) => event.stopPropagation()}>
+        <header className="items-screen-header">
+          <button className="back-button" onClick={onClose} type="button">← Close items</button>
+          <div>
+            <p className="eyebrow">Estimation queue</p>
+            <h1>Items to estimate</h1>
+            <p>Prepare the session before voting starts. Add one item per line.</p>
+          </div>
+          <span className="items-room-name">{room.name}</span>
+        </header>
 
-      {activeRound && (
-        <div className="items-active-notice">
-          The item list is read-only while a round is active.
-        </div>
-      )}
+        {activeRound && (
+          <div className="items-active-notice">
+            The item list is read-only while a round is active.
+          </div>
+        )}
 
-      <div className="items-workspace">
-        <section className="items-composer">
+        <div className="items-workspace">
+          <section className="items-composer">
           <span className="item-step">01</span>
           <h2>Add items</h2>
           <p>Paste a list from your backlog or write the work down here.</p>
@@ -1486,9 +1489,9 @@ function ItemManager({ room, send, onClose }) {
               </button>
             </div>
           </form>
-        </section>
+          </section>
 
-        <section className="items-queue">
+          <section className="items-queue">
           <div className="items-queue-heading">
             <div>
               <span className="item-step">02</span>
@@ -1525,8 +1528,9 @@ function ItemManager({ room, send, onClose }) {
               <span>{estimatedItems.map((item) => item.title).join(" · ")}</span>
             </div>
           )}
-        </section>
-      </div>
+          </section>
+        </div>
+      </section>
     </div>
   );
 }
