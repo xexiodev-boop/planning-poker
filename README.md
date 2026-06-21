@@ -13,6 +13,9 @@ Rooms are anonymous and expire seven days after their last meaningful activity. 
 choose a name and receive a random five-character suffix, color, private identity token, and
 reconnect support.
 
+Participant identities are stored in room-scoped, HttpOnly, SameSite cookies. They are never
+exposed to application JavaScript or included in WebSocket URLs.
+
 Room links use the generated room name plus a short random identifier, for example
 `/room/quiet-violet-koala-58f74e`.
 
@@ -49,6 +52,24 @@ npm run deploy
 
 The first deployment creates the `PlanningRoom` Durable Object namespace using the migration
 declared in `wrangler.jsonc`.
+
+## Production safeguards
+
+- Requests and WebSocket upgrades are restricted to the app origin.
+- Room creation, joining, and WebSocket actions are rate-limited.
+- HTTP bodies and WebSocket messages are limited to 16 KB.
+- Security headers and a restrictive Content Security Policy are applied.
+- Room state is schema-versioned and automatically upgraded when loaded.
+- Structured operational logs exclude names, votes, task titles, and identity tokens.
+
+Room limits:
+
+- 20 people, including the facilitator
+- 50 pending items
+- 100 completed estimates
+- 16 cards per deck
+
+Completed history and its associated estimated items are pruned to the newest 100 entries.
 
 ## Current flow
 

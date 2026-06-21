@@ -1,26 +1,45 @@
 import assert from "node:assert/strict";
+import WebSocket from "ws";
 
 const baseUrl = process.env.APP_URL ?? "http://127.0.0.1:4175";
 const wsBaseUrl = baseUrl.replace(/^http/, "ws");
+const facilitatorSession = { cookie: "" };
+const participantSession = { cookie: "" };
+const observerSession = { cookie: "" };
 
-async function request(path, options = {}) {
+async function request(path, options = {}, session = facilitatorSession) {
   const response = await fetch(`${baseUrl}${path}`, {
     ...options,
-    headers: { "Content-Type": "application/json", ...options.headers },
+    headers: {
+      "Content-Type": "application/json",
+      Origin: baseUrl,
+      ...(session.cookie ? { Cookie: session.cookie } : {}),
+      ...options.headers,
+    },
   });
+  const setCookie = response.headers.get("set-cookie");
+  if (setCookie) session.cookie = setCookie.split(";")[0];
   const body = await response.json();
   if (!response.ok) throw new Error(body.error ?? `Request failed: ${response.status}`);
   return body;
 }
 
-function roomSocket(roomId, token) {
-  const socket = new WebSocket(`${wsBaseUrl}/api/rooms/${roomId}/socket?token=${token}`);
+function roomSocket(roomId, session) {
+  const socket = new WebSocket(`${wsBaseUrl}/api/rooms/${roomId}/socket`, {
+    headers: { Cookie: session.cookie, Origin: baseUrl },
+  });
   const listeners = new Set();
+  const errorListeners = new Set();
   let latestRoom = null;
+  let latestError = null;
 
   socket.addEventListener("message", (event) => {
     const message = JSON.parse(event.data);
-    if (message.type === "error") throw new Error(message.message);
+    if (message.type === "error") {
+      latestError = message.message;
+      errorListeners.forEach((listener) => listener(message.message));
+      return;
+    }
     if (message.type !== "state") return;
     latestRoom = message.room;
     listeners.forEach((listener) => listener(message.room));
@@ -46,6 +65,27 @@ function roomSocket(roomId, token) {
         listeners.add(check);
       });
     },
+    waitForError(pattern, timeoutMs = 5000) {
+      if (latestError && pattern.test(latestError)) {
+        const error = latestError;
+        latestError = null;
+        return Promise.resolve(error);
+      }
+      return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          errorListeners.delete(check);
+          reject(new Error("Timed out waiting for room error."));
+        }, timeoutMs);
+        function check(message) {
+          if (!pattern.test(message)) return;
+          clearTimeout(timeout);
+          errorListeners.delete(check);
+          latestError = null;
+          resolve(message);
+        }
+        errorListeners.add(check);
+      });
+    },
     close() {
       socket.close();
     },
@@ -60,15 +100,15 @@ assert.match(created.roomId, /^[a-z]+-[a-z]+-[a-z]+-[a-f0-9]{6}$/);
 const joined = await request(`/api/rooms/${created.roomId}/join`, {
   method: "POST",
   body: JSON.stringify({ name: "Alex" }),
-});
+}, participantSession);
 const observerJoined = await request(`/api/rooms/${created.roomId}/join`, {
   method: "POST",
   body: JSON.stringify({ name: "Sam" }),
-});
+}, observerSession);
 
-const facilitator = roomSocket(created.roomId, created.token);
-const participant = roomSocket(created.roomId, joined.token);
-const observer = roomSocket(created.roomId, observerJoined.token);
+const facilitator = roomSocket(created.roomId, facilitatorSession);
+const participant = roomSocket(created.roomId, participantSession);
+const observer = roomSocket(created.roomId, observerSession);
 
 const lobby = await facilitator.waitFor((room) => room.participants.length === 3);
 assert.equal(created.roomId.startsWith(`${lobby.name.toLowerCase().replaceAll(" ", "-")}-`), true);
@@ -83,6 +123,18 @@ facilitator.send({
 });
 const observerConfigured = await observer.waitFor((room) => room.viewer.role === "observer");
 assert.equal(observerConfigured.participants.find((person) => person.id === observerPerson.id).role, "observer");
+
+facilitator.send({
+  type: "update_settings",
+  cards: Array.from({ length: 17 }, (_, index) => String(index)),
+});
+await facilitator.waitForError(/at most 16 cards/);
+
+facilitator.send({
+  type: "add_items",
+  titles: Array.from({ length: 51 }, (_, index) => `Overflow item ${index + 1}`),
+});
+await facilitator.waitForError(/at most 50 pending items/);
 
 facilitator.send({
   type: "update_settings",
@@ -196,7 +248,7 @@ await assert.rejects(
   request(`/api/rooms/${created.roomId}/join`, {
     method: "POST",
     body: JSON.stringify({ name: "Late guest" }),
-  }),
+  }, { cookie: "" }),
   /not accepting new participants/,
 );
 
@@ -210,8 +262,34 @@ await assert.rejects(
   request(`/api/rooms/${created.roomId}/join`, {
     method: "POST",
     body: JSON.stringify({ name: "Too late" }),
-  }),
+  }, { cookie: "" }),
   /closed/,
+);
+
+const rejectedOrigin = await fetch(`${baseUrl}/api/rooms`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json", Origin: "https://untrusted.example" },
+  body: JSON.stringify({ name: "Origin test", deckId: "fibonacci" }),
+});
+assert.equal(rejectedOrigin.status, 403);
+
+const capacityOwner = { cookie: "" };
+const capacityRoom = await request("/api/rooms", {
+  method: "POST",
+  body: JSON.stringify({ name: "Capacity owner", deckId: "fibonacci" }),
+}, capacityOwner);
+for (let index = 1; index < 20; index += 1) {
+  await request(`/api/rooms/${capacityRoom.roomId}/join`, {
+    method: "POST",
+    body: JSON.stringify({ name: `Person ${index}` }),
+  }, { cookie: "" });
+}
+await assert.rejects(
+  request(`/api/rooms/${capacityRoom.roomId}/join`, {
+    method: "POST",
+    body: JSON.stringify({ name: "Person 20" }),
+  }, { cookie: "" }),
+  /20-person limit/,
 );
 
 facilitator.close();

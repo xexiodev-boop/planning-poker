@@ -51,20 +51,21 @@ const SUGGESTION_ALGORITHMS = [
   },
 ];
 
-function identityKey(roomId) {
-  return `estimation-poker:${roomId}`;
-}
-
 async function api(path, options = {}) {
   const response = await fetch(path, {
     ...options,
+    credentials: "same-origin",
     headers: {
       "Content-Type": "application/json",
       ...options.headers,
     },
   });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || "Something went wrong.");
+  if (!response.ok) {
+    const error = new Error(data.error || "Something went wrong.");
+    error.status = response.status;
+    throw error;
+  }
   return data;
 }
 
@@ -119,7 +120,6 @@ function HomePage() {
         method: "POST",
         body: JSON.stringify({ name, deckId }),
       });
-      localStorage.setItem(identityKey(result.roomId), result.token);
       window.location.assign(`/room/${result.roomId}`);
     } catch (requestError) {
       setError(requestError.message);
@@ -201,31 +201,26 @@ function HomePage() {
 }
 
 function RoomPage({ roomId }) {
-  const [token, setToken] = useState(() => localStorage.getItem(identityKey(roomId)));
+  const [access, setAccess] = useState("checking");
   const [room, setRoom] = useState(null);
   const [status, setStatus] = useState("connecting");
   const [error, setError] = useState("");
   const socketRef = useRef(null);
 
   useEffect(() => {
-    if (!token) {
-      setStatus("join");
-      return undefined;
-    }
-
     let cancelled = false;
     let retryTimer;
+    let retryCount = 0;
 
     function connect() {
       setStatus(room ? "reconnecting" : "connecting");
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const socket = new WebSocket(
-        `${protocol}//${window.location.host}/api/rooms/${roomId}/socket?token=${encodeURIComponent(token)}`,
-      );
+      const socket = new WebSocket(`${protocol}//${window.location.host}/api/rooms/${roomId}/socket`);
       socketRef.current = socket;
 
       socket.onopen = () => {
         if (!cancelled) {
+          retryCount = 0;
           setStatus("connected");
           setError("");
         }
@@ -238,25 +233,46 @@ function RoomPage({ roomId }) {
       socket.onclose = (event) => {
         if (cancelled) return;
         if (event.code === 1008 || event.code === 1001 || event.code === 4001) {
-          localStorage.removeItem(identityKey(roomId));
-          setToken(null);
+          setAccess("join");
           setRoom(null);
           setStatus("join");
           if (event.code === 4001) setError("You were removed from this room.");
           return;
         }
         setStatus("reconnecting");
-        retryTimer = window.setTimeout(connect, 1500);
+        const delay = Math.min(15000, 750 * (2 ** retryCount));
+        retryCount += 1;
+        retryTimer = window.setTimeout(connect, delay + Math.random() * 500);
       };
     }
 
-    connect();
+    async function authenticate() {
+      try {
+        const state = await api(`/api/rooms/${roomId}/state`);
+        if (cancelled) return;
+        setRoom(state);
+        setAccess("joined");
+        connect();
+      } catch (requestError) {
+        if (cancelled) return;
+        if (requestError.status === 401) {
+          setAccess("join");
+          setStatus("join");
+        } else {
+          setAccess("join");
+          setStatus("join");
+          setError(requestError.message);
+        }
+      }
+    }
+
+    authenticate();
     return () => {
       cancelled = true;
       window.clearTimeout(retryTimer);
       socketRef.current?.close();
     };
-  }, [roomId, token]);
+  }, [roomId]);
 
   const send = useCallback((event) => {
     if (socketRef.current?.readyState !== WebSocket.OPEN) {
@@ -270,19 +286,22 @@ function RoomPage({ roomId }) {
     setStatus("connecting");
     setError("");
     try {
-      const result = await api(`/api/rooms/${roomId}/join`, {
+      await api(`/api/rooms/${roomId}/join`, {
         method: "POST",
         body: JSON.stringify({ name }),
       });
-      localStorage.setItem(identityKey(roomId), result.token);
-      setToken(result.token);
+      setAccess("checking");
+      const state = await api(`/api/rooms/${roomId}/state`);
+      setRoom(state);
+      setAccess("joined");
+      window.location.reload();
     } catch (requestError) {
       setError(requestError.message);
       setStatus("join");
     }
   }
 
-  if (!token) return <JoinRoom roomId={roomId} onJoin={join} error={error} />;
+  if (access === "join") return <JoinRoom roomId={roomId} onJoin={join} error={error} />;
   if (!room) return <LoadingRoom status={status} error={error} />;
 
   return <Room room={room} send={send} status={status} error={error} />;
@@ -1180,7 +1199,7 @@ function RoomSettings({ room, send, onClose, onManageItems }) {
   function addCard(event) {
     event.preventDefault();
     const value = newCard.trim();
-    if (!value || cards.includes(value) || cards.length >= 24) return;
+    if (!value || cards.includes(value) || cards.length >= 16) return;
     setCards([...cards, value]);
     setNewCard("");
   }

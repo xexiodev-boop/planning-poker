@@ -1,6 +1,14 @@
 import { getDeck } from "../shared/decks.js";
 
 const ROOM_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000;
+const CURRENT_SCHEMA_VERSION = 1;
+const MAX_REQUEST_BYTES = 16 * 1024;
+const MAX_WEBSOCKET_MESSAGE_BYTES = 16 * 1024;
+const MAX_PARTICIPANTS = 20;
+const MAX_PENDING_ITEMS = 50;
+const MAX_COMPLETED_ESTIMATES = 100;
+const MAX_CARDS = 16;
+const IDENTITY_COOKIE = "point_taken_identity";
 const DEFAULT_REVEAL_DELAY_SECONDS = 30;
 const ALLOWED_REVEAL_DELAYS = new Set([0, 15, 30, 60, 90]);
 const ALLOWED_SUGGESTION_ALGORITHMS = new Set([
@@ -27,6 +35,72 @@ const ANIMALS = ["Badger", "Falcon", "Fox", "Koala", "Otter", "Panda", "Raven", 
 
 function json(data, status = 200) {
   return Response.json(data, { status });
+}
+
+function byteLength(value) {
+  return new TextEncoder().encode(value).byteLength;
+}
+
+async function readJson(request) {
+  if (!request.headers.get("Content-Type")?.toLowerCase().startsWith("application/json")) {
+    throw new Error("Content-Type must be application/json.");
+  }
+  const contentLength = Number(request.headers.get("Content-Length") ?? 0);
+  if (contentLength > MAX_REQUEST_BYTES) throw new Error("Request is too large.");
+  const text = await request.text();
+  if (byteLength(text) > MAX_REQUEST_BYTES) throw new Error("Request is too large.");
+  if (!text) return {};
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error("Request body must be valid JSON.");
+  }
+}
+
+function cookieValue(request, name) {
+  const cookies = request.headers.get("Cookie") ?? "";
+  for (const part of cookies.split(";")) {
+    const [key, ...value] = part.trim().split("=");
+    if (key === name) return decodeURIComponent(value.join("="));
+  }
+  return null;
+}
+
+function identityCookie(token, roomId, secure) {
+  const parts = [
+    `${IDENTITY_COOKIE}=${encodeURIComponent(token)}`,
+    `Path=/api/rooms/${roomId}`,
+    `Max-Age=${Math.floor(ROOM_LIFETIME_MS / 1000)}`,
+    "HttpOnly",
+    "SameSite=Strict",
+  ];
+  if (secure) parts.push("Secure");
+  return parts.join("; ");
+}
+
+function withSecurityHeaders(response) {
+  const next = new Response(response.body, response);
+  next.headers.set(
+    "Content-Security-Policy",
+    "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+  );
+  next.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  next.headers.set("X-Content-Type-Options", "nosniff");
+  next.headers.set("Referrer-Policy", "no-referrer");
+  next.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  next.headers.set("Cache-Control", "no-store");
+  return next;
+}
+
+function validateOrigin(request, requestUrl, env) {
+  const origin = request.headers.get("Origin");
+  const allowed = new Set([requestUrl.origin]);
+  if (env.ALLOWED_ORIGIN) allowed.add(env.ALLOWED_ORIGIN);
+  return Boolean(origin && allowed.has(origin));
+}
+
+function safeLog(event, details = {}) {
+  console.log({ event, ...details });
 }
 
 function randomItem(items) {
@@ -76,7 +150,7 @@ function cleanCards(cards) {
     .map((card) => String(card ?? "").trim().slice(0, 12))
     .filter(Boolean);
   if (cleaned.length < 2) throw new Error("A deck needs at least two cards.");
-  if (cleaned.length > 24) throw new Error("A deck can contain at most 24 cards.");
+  if (cleaned.length > MAX_CARDS) throw new Error(`A deck can contain at most ${MAX_CARDS} cards.`);
   if (new Set(cleaned).size !== cleaned.length) throw new Error("Deck cards must be unique.");
   return cleaned;
 }
@@ -210,37 +284,110 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    if (url.pathname === "/api/rooms" && request.method === "POST") {
-      const input = await request.json().catch(() => ({}));
-      const roomName = randomRoomName();
-      const roomId = randomRoomId(roomName);
+    try {
+      if (url.pathname === "/api/rooms" && request.method === "POST") {
+        if (!validateOrigin(request, url, env)) {
+          safeLog("origin_rejected", { action: "create_room" });
+          return withSecurityHeaders(json({ error: "Request origin is not allowed." }, 403));
+        }
+        const actorKey = request.headers.get("CF-Connecting-IP") ?? "local";
+        const { success } = await env.CREATE_RATE_LIMITER.limit({ key: actorKey });
+        if (!success) {
+          safeLog("rate_limited", { action: "create_room" });
+          return withSecurityHeaders(json({ error: "Too many rooms created. Try again shortly." }, 429));
+        }
+        const input = await readJson(request);
+        const roomName = randomRoomName();
+        const roomId = randomRoomId(roomName);
+        const objectId = env.ROOMS.idFromName(roomId);
+        const stub = env.ROOMS.get(objectId);
+        const response = await stub.fetch("https://room.internal/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            roomId,
+            roomName,
+            facilitatorName: input.name,
+            deckId: input.deckId,
+          }),
+        });
+        const result = await response.json();
+        if (!response.ok) return withSecurityHeaders(json(result, response.status));
+        const publicResult = {
+          roomId: result.roomId,
+          participantId: result.participantId,
+        };
+        const publicResponse = json(publicResult, 201);
+        publicResponse.headers.append(
+          "Set-Cookie",
+          identityCookie(result.token, roomId, url.protocol === "https:"),
+        );
+        safeLog("room_created", { roomId });
+        return withSecurityHeaders(publicResponse);
+      }
+
+      const match = url.pathname.match(
+        /^\/api\/rooms\/([a-f0-9]{16}|[a-z0-9]+(?:-[a-z0-9]+){3})(?:\/(join|socket|state))?$/,
+      );
+      if (!match) {
+        return withSecurityHeaders(json({ error: "Not found" }, 404));
+      }
+
+      const [, roomId, action = "state"] = match;
+      const isSocket = action === "socket";
+      const isMutation = request.method !== "GET";
+      if ((isSocket || isMutation) && !validateOrigin(request, url, env)) {
+        safeLog("origin_rejected", { action, roomId });
+        return withSecurityHeaders(json({ error: "Request origin is not allowed." }, 403));
+      }
+
       const objectId = env.ROOMS.idFromName(roomId);
       const stub = env.ROOMS.get(objectId);
-      const response = await stub.fetch("https://room.internal/create", {
-        method: "POST",
-        body: JSON.stringify({
-          roomId,
-          roomName,
-          facilitatorName: input.name,
-          deckId: input.deckId,
-        }),
-      });
-      return response;
-    }
+      const target = new URL(`https://room.internal/${action}`);
+      const headers = new Headers(request.headers);
+      const token = cookieValue(request, IDENTITY_COOKIE);
+      if (token) headers.set("X-Room-Identity", token);
 
-    const match = url.pathname.match(
-      /^\/api\/rooms\/([a-f0-9]{16}|[a-z0-9]+(?:-[a-z0-9]+){3})(?:\/(join|socket|state))?$/,
-    );
-    if (!match) {
-      return json({ error: "Not found" }, 404);
-    }
+      let forwardedRequest = request;
+      if (action === "join" && request.method === "POST") {
+        const actorKey = `${roomId}:${request.headers.get("CF-Connecting-IP") ?? "local"}`;
+        const { success } = await env.JOIN_RATE_LIMITER.limit({ key: actorKey });
+        if (!success) {
+          safeLog("rate_limited", { action: "join_room", roomId });
+          return withSecurityHeaders(json({ error: "Too many join attempts. Try again shortly." }, 429));
+        }
+        const input = await readJson(request);
+        forwardedRequest = new Request(target, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(input),
+        });
+      } else {
+        forwardedRequest = new Request(target, request);
+        forwardedRequest.headers.set("X-Room-Identity", token ?? "");
+      }
 
-    const [, roomId, action = "state"] = match;
-    const objectId = env.ROOMS.idFromName(roomId);
-    const stub = env.ROOMS.get(objectId);
-    const target = new URL(`https://room.internal/${action}`);
-    target.search = url.search;
-    return stub.fetch(target, request);
+      const response = await stub.fetch(target, forwardedRequest);
+      if (action === "join" && request.method === "POST") {
+        const result = await response.json();
+        if (!response.ok) return withSecurityHeaders(json(result, response.status));
+        const publicResponse = json({
+          roomId: result.roomId,
+          participantId: result.participantId,
+        }, response.status);
+        publicResponse.headers.append(
+          "Set-Cookie",
+          identityCookie(result.token, roomId, url.protocol === "https:"),
+        );
+        safeLog("participant_joined", { roomId });
+        return withSecurityHeaders(publicResponse);
+      }
+      return isSocket ? response : withSecurityHeaders(response);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Invalid request.";
+      safeLog("request_rejected", { reason: message });
+      return withSecurityHeaders(json({ error: message }, 400));
+    }
   },
 };
 
@@ -252,6 +399,7 @@ export class PlanningRoom {
   async loadRoom() {
     const room = await this.ctx.storage.get("room");
     if (!room) return room;
+    room.schemaVersion ??= 0;
     room.deck ??= cloneDeck(room.deckId);
     room.settings ??= {};
     room.settings.suggestionAlgorithm ??= "most_votes";
@@ -259,6 +407,10 @@ export class PlanningRoom {
     room.isLocked ??= false;
     room.isClosed ??= false;
     room.items ??= [];
+    if (room.schemaVersion < CURRENT_SCHEMA_VERSION) {
+      room.schemaVersion = CURRENT_SCHEMA_VERSION;
+      await this.ctx.storage.put("room", room);
+    }
     return room;
   }
 
@@ -298,13 +450,13 @@ export class PlanningRoom {
     }
 
     if (url.pathname === "/state" && request.method === "GET") {
-      const participant = findParticipantByToken(room, url.searchParams.get("token"));
+      const participant = findParticipantByToken(room, request.headers.get("X-Room-Identity"));
       if (!participant) return json({ error: "Invalid room identity." }, 401);
       return json(this.roomView(room, participant));
     }
 
     if (url.pathname === "/socket" && request.headers.get("Upgrade") === "websocket") {
-      return this.connect(url, room);
+      return this.connect(request, room);
     }
 
     return json({ error: "Not found" }, 404);
@@ -315,11 +467,12 @@ export class PlanningRoom {
       return json({ error: "Room already exists." }, 409);
     }
 
-    const input = await request.json();
+    const input = await readJson(request);
     const facilitator = newParticipant(input.facilitatorName, "facilitator", 0);
     const now = Date.now();
     const room = {
       id: input.roomId,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       name: input.roomName || randomRoomName(),
       deckId: getDeck(input.deckId).id,
       deck: cloneDeck(input.deckId),
@@ -347,8 +500,8 @@ export class PlanningRoom {
   }
 
   async join(request, room) {
-    const input = await request.json().catch(() => ({}));
-    const returning = input.token && findParticipantByToken(room, input.token);
+    const input = await readJson(request);
+    const returning = findParticipantByToken(room, request.headers.get("X-Room-Identity"));
     if (returning) {
       return json({
         roomId: room.id,
@@ -359,6 +512,9 @@ export class PlanningRoom {
 
     if (room.isClosed) return json({ error: "This room has been closed." }, 423);
     if (room.isLocked) return json({ error: "This room is not accepting new participants." }, 423);
+    if (room.participants.length >= MAX_PARTICIPANTS) {
+      return json({ error: `This room has reached its ${MAX_PARTICIPANTS}-person limit.` }, 409);
+    }
 
     const participant = newParticipant(input.name, "participant", room.participants.length);
     room.participants.push(participant);
@@ -372,8 +528,8 @@ export class PlanningRoom {
     }, 201);
   }
 
-  async connect(url, room) {
-    const participant = findParticipantByToken(room, url.searchParams.get("token"));
+  async connect(request, room) {
+    const participant = findParticipantByToken(room, request.headers.get("X-Room-Identity"));
     if (!participant) return json({ error: "Invalid room identity." }, 401);
 
     const pair = new WebSocketPair();
@@ -401,6 +557,20 @@ export class PlanningRoom {
     }
 
     try {
+      const now = Date.now();
+      const messageWindowStartedAt = attachment.messageWindowStartedAt ?? now;
+      const messageCount = now - messageWindowStartedAt < 10000
+        ? (attachment.messageCount ?? 0) + 1
+        : 1;
+      if (messageCount > 40) throw new Error("Too many room actions. Slow down and try again.");
+      socket.serializeAttachment({
+        ...attachment,
+        messageWindowStartedAt: now - messageWindowStartedAt < 10000 ? messageWindowStartedAt : now,
+        messageCount,
+      });
+      if (typeof message !== "string" || byteLength(message) > MAX_WEBSOCKET_MESSAGE_BYTES) {
+        throw new Error("Room message is too large.");
+      }
       const event = JSON.parse(message);
       await this.applyAction(room, participant, event);
       await this.saveRoom(room);
@@ -434,6 +604,7 @@ export class PlanningRoom {
     if (!room) return;
 
     if (room.expiresAt <= Date.now()) {
+      safeLog("room_expired", { roomId: room.id });
       this.ctx.getWebSockets().forEach((socket) => socket.close(1001, "Room expired"));
       await this.ctx.storage.deleteAll();
       return;
@@ -545,7 +716,16 @@ export class PlanningRoom {
         const existingTitles = new Set(
           room.items.filter((item) => item.status === "pending").map((item) => item.title.toLowerCase()),
         );
-        for (const title of cleanItemTitles(event.titles)) {
+        const requestedTitles = cleanItemTitles(event.titles);
+        const availableSlots = MAX_PENDING_ITEMS - existingTitles.size;
+        const uniqueNewTitles = requestedTitles.filter((title, index, values) =>
+          !existingTitles.has(title.toLowerCase()) &&
+          values.findIndex((value) => value.toLowerCase() === title.toLowerCase()) === index,
+        );
+        if (uniqueNewTitles.length > availableSlots) {
+          throw new Error(`A room can have at most ${MAX_PENDING_ITEMS} pending items.`);
+        }
+        for (const title of uniqueNewTitles) {
           if (existingTitles.has(title.toLowerCase())) continue;
           room.items.push({
             id: crypto.randomUUID(),
@@ -728,6 +908,16 @@ export class PlanningRoom {
               confirmed: round.votes[participantId]?.confirmed ?? false,
             };
           }),
+        });
+        room.history = room.history.slice(0, MAX_COMPLETED_ESTIMATES);
+        const retainedItemIds = new Set(room.history.map(({ itemId }) => itemId).filter(Boolean));
+        room.items = room.items.filter(
+          (item) => item.status === "pending" || retainedItemIds.has(item.id),
+        );
+        safeLog("round_finalized", {
+          roomId: room.id,
+          participantCount: round.eligibleParticipantIds.length,
+          historyCount: room.history.length,
         });
         break;
       }
