@@ -50,6 +50,14 @@ const SUGGESTION_ALGORITHMS = [
     description: "Show the votes and leave the decision entirely to the team.",
   },
 ];
+const REACTION_OPTIONS = [
+  { emoji: "👍", label: "Agree" },
+  { emoji: "🤔", label: "Unsure" },
+  { emoji: "👀", label: "Reviewing" },
+  { emoji: "🎉", label: "Nice" },
+  { emoji: "☕", label: "Break" },
+  { emoji: "✋", label: "Need to speak" },
+];
 
 async function api(path, options = {}) {
   const response = await fetch(path, {
@@ -362,6 +370,39 @@ function Room({ room, send, status, error }) {
   const [copied, setCopied] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [itemsOpen, setItemsOpen] = useState(false);
+  const [presenceNotices, setPresenceNotices] = useState([]);
+  const previousPeopleRef = useRef(null);
+
+  useEffect(() => {
+    const currentPeople = new Map(room.participants.map((person) => [person.id, person]));
+    const previousPeople = previousPeopleRef.current;
+    previousPeopleRef.current = currentPeople;
+    if (!previousPeople) return;
+
+    const events = [];
+    for (const person of room.participants) {
+      if (person.id === room.viewer.id) continue;
+      const previous = previousPeople.get(person.id);
+      if (person.connected && (!previous || !previous.connected)) {
+        events.push({ person, kind: "joined" });
+      } else if (!person.connected && previous?.connected) {
+        events.push({ person, kind: "left" });
+      }
+    }
+    for (const [id, person] of previousPeople) {
+      if (id !== room.viewer.id && !currentPeople.has(id)) {
+        events.push({ person, kind: "left" });
+      }
+    }
+
+    events.forEach(({ person, kind }) => {
+      const id = crypto.randomUUID();
+      setPresenceNotices((notices) => [...notices.slice(-3), { id, person, kind }]);
+      window.setTimeout(() => {
+        setPresenceNotices((notices) => notices.filter((notice) => notice.id !== id));
+      }, 3500);
+    });
+  }, [room.participants, room.viewer.id]);
 
   async function copyLink() {
     await navigator.clipboard.writeText(window.location.href);
@@ -405,6 +446,19 @@ function Room({ room, send, status, error }) {
       </header>
 
       {error && <div className="toast">{error}</div>}
+      <div className="presence-notifications" aria-live="polite">
+        {presenceNotices.map((notice) => (
+          <div className={`presence-notice ${notice.kind}`} key={notice.id}>
+            <span style={{ backgroundColor: notice.person.color }}>
+              {notice.person.displayName.charAt(0).toUpperCase()}
+            </span>
+            <div>
+              <strong>{notice.person.displayName}</strong>
+              <small>{notice.kind === "joined" ? "joined the room" : "left the room"}</small>
+            </div>
+          </div>
+        ))}
+      </div>
       {settingsOpen && (
         <RoomSettings
           room={room}
@@ -434,7 +488,66 @@ function Room({ room, send, status, error }) {
           <History room={room} />
         </aside>
       </div>
+      <ReactionLayer room={room} send={send} />
     </main>
+  );
+}
+
+function ReactionLayer({ room, send }) {
+  const enabled = room.settings.reactionsEnabled;
+  const muted = room.settings.reactionsMuted;
+  const ownHandRaised = room.raisedHands.some(({ participantId }) => participantId === room.viewer.id);
+
+  if (room.isClosed) return null;
+  if (!enabled && room.viewer.role !== "facilitator") return null;
+
+  return (
+    <>
+      <div className="floating-reactions" aria-live="polite">
+        {room.reactions.map((reaction, index) => (
+          <div
+            className="floating-reaction"
+            key={reaction.id}
+            style={{
+              "--reaction-color": reaction.color,
+              "--reaction-offset": `${(index % 5) * 34}px`,
+            }}
+          >
+            <strong>{reaction.reaction}</strong>
+            <span>{reaction.participantName}</span>
+          </div>
+        ))}
+      </div>
+      {room.raisedHands.length > 0 && (
+        <div className="raised-hands">
+          <strong>✋ {room.raisedHands.length}</strong>
+          <span>{room.raisedHands.map(({ participantName }) => participantName).join(", ")}</span>
+        </div>
+      )}
+      {enabled && (
+        <div className={`reaction-toolbar ${muted ? "muted" : ""}`}>
+          {muted ? (
+            <span>Reactions paused</span>
+          ) : (
+            room.settings.reactionPalette.map((reaction) => (
+              <button
+                aria-label={REACTION_OPTIONS.find(({ emoji }) => emoji === reaction)?.label ?? reaction}
+                className={reaction === "✋" && ownHandRaised ? "active" : ""}
+                key={reaction}
+                onClick={() => send({
+                  type: reaction === "✋" && ownHandRaised ? "lower_hand" : "send_reaction",
+                  reaction,
+                })}
+                title={REACTION_OPTIONS.find(({ emoji }) => emoji === reaction)?.label}
+                type="button"
+              >
+                {reaction}
+              </button>
+            ))
+          )}
+        </div>
+      )}
+    </>
   );
 }
 
@@ -486,6 +599,16 @@ function StartRound({ room, send, previousRound }) {
   const [title, setTitle] = useState("");
   const [source, setSource] = useState(pendingItems.length ? "backlog" : "new");
   const selectedItem = pendingItems.find((item) => item.id === itemId);
+
+  useEffect(() => {
+    if (pendingItems.length && !pendingItems.some((item) => item.id === itemId)) {
+      setItemId(pendingItems[0].id);
+      setSource("backlog");
+    } else if (!pendingItems.length) {
+      setItemId("");
+      setSource("new");
+    }
+  }, [itemId, pendingItems]);
 
   function submit(event) {
     event.preventDefault();
@@ -1189,6 +1312,8 @@ function RoomSettings({ room, send, onClose, onManageItems }) {
   const [newCard, setNewCard] = useState("");
   const [algorithm, setAlgorithm] = useState(room.settings.suggestionAlgorithm);
   const [timer, setTimer] = useState(room.settings.revealDelaySeconds);
+  const [reactionsEnabled, setReactionsEnabled] = useState(room.settings.reactionsEnabled);
+  const [reactionPalette, setReactionPalette] = useState(room.settings.reactionPalette);
   const activeRound = room.currentRound && room.currentRound.phase !== "finalized";
   const { confirm, confirmationDialog } = useConfirmation();
   const sensors = useSensors(
@@ -1220,6 +1345,8 @@ function RoomSettings({ room, send, onClose, onManageItems }) {
       cards,
       suggestionAlgorithm: algorithm,
       revealDelaySeconds: Number(timer),
+      reactionsEnabled,
+      reactionPalette,
     });
     onClose();
   }
@@ -1359,6 +1486,70 @@ function RoomSettings({ room, send, onClose, onManageItems }) {
             </select>
           </section>
 
+          <section className="settings-group">
+            <div className="settings-title">
+              <div>
+                <h3>Team reactions</h3>
+                <p>Let people signal agreement, uncertainty, breaks, or a wish to speak.</p>
+              </div>
+              <label className="switch-control">
+                <input
+                  checked={reactionsEnabled}
+                  onChange={(event) => setReactionsEnabled(event.target.checked)}
+                  type="checkbox"
+                />
+                <span />
+              </label>
+            </div>
+            {reactionsEnabled && (
+              <>
+                <div className="reaction-palette-editor">
+                  {REACTION_OPTIONS.map((option) => {
+                    const selected = reactionPalette.includes(option.emoji);
+                    return (
+                      <button
+                        className={selected ? "selected" : ""}
+                        key={option.emoji}
+                        onClick={() => {
+                          if (selected && reactionPalette.length === 1) return;
+                          setReactionPalette(
+                            selected
+                              ? reactionPalette.filter((reaction) => reaction !== option.emoji)
+                              : [...reactionPalette, option.emoji],
+                          );
+                        }}
+                        title={option.label}
+                        type="button"
+                      >
+                        <strong>{option.emoji}</strong>
+                        <small>{option.label}</small>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="reaction-admin-actions">
+                  <button
+                    className="secondary-button"
+                    onClick={() => send({
+                      type: "set_reactions_muted",
+                      muted: !room.settings.reactionsMuted,
+                    })}
+                    type="button"
+                  >
+                    {room.settings.reactionsMuted ? "Resume reactions" : "Pause reactions"}
+                  </button>
+                  <button
+                    className="secondary-button"
+                    onClick={() => send({ type: "clear_reactions" })}
+                    type="button"
+                  >
+                    Clear reactions
+                  </button>
+                </div>
+              </>
+            )}
+          </section>
+
           <section className="settings-group access-settings">
             <div>
               <h3>Room access</h3>
@@ -1456,8 +1647,17 @@ function ConfirmDialog({
 function ItemManager({ room, send, onClose }) {
   const [itemTitles, setItemTitles] = useState("");
   const pendingItems = room.items.filter((item) => item.status === "pending");
+  const [orderedItems, setOrderedItems] = useState(pendingItems);
   const estimatedItems = room.items.filter((item) => item.status === "estimated");
   const activeRound = room.currentRound && room.currentRound.phase !== "finalized";
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  useEffect(() => {
+    setOrderedItems(pendingItems);
+  }, [room.items]);
 
   function addItems(event) {
     event.preventDefault();
@@ -1465,6 +1665,20 @@ function ItemManager({ room, send, onClose }) {
     if (!titles.length) return;
     send({ type: "add_items", titles });
     setItemTitles("");
+  }
+
+  function reorderItems(event) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setOrderedItems((items) => {
+      const reordered = arrayMove(
+        items,
+        items.findIndex((item) => item.id === active.id),
+        items.findIndex((item) => item.id === over.id),
+      );
+      send({ type: "reorder_items", itemIds: reordered.map((item) => item.id) });
+      return reordered;
+    });
   }
 
   return (
@@ -1518,23 +1732,26 @@ function ItemManager({ room, send, onClose }) {
             </div>
             <span>{pendingItems.length} pending</span>
           </div>
-          {pendingItems.length ? (
-            <ol>
-              {pendingItems.map((item, index) => (
-                <li key={item.id}>
-                  <small>{String(index + 1).padStart(2, "0")}</small>
-                  <span>{item.title}</span>
-                  <button
-                    disabled={activeRound}
-                    onClick={() => send({ type: "remove_item", itemId: item.id })}
-                    type="button"
-                    aria-label={`Remove ${item.title}`}
-                  >
-                    ×
-                  </button>
-                </li>
-              ))}
-            </ol>
+          {orderedItems.length ? (
+            <DndContext
+              collisionDetection={closestCenter}
+              onDragEnd={reorderItems}
+              sensors={sensors}
+            >
+              <SortableContext items={orderedItems.map((item) => item.id)} strategy={rectSortingStrategy}>
+                <ol>
+                  {orderedItems.map((item, index) => (
+                    <SortableQueueItem
+                      activeRound={activeRound}
+                      index={index}
+                      item={item}
+                      key={item.id}
+                      onRemove={() => send({ type: "remove_item", itemId: item.id })}
+                    />
+                  ))}
+                </ol>
+              </SortableContext>
+            </DndContext>
           ) : (
             <div className="items-queue-empty">
               <strong>Your queue is empty</strong>
@@ -1551,6 +1768,47 @@ function ItemManager({ room, send, onClose }) {
         </div>
       </section>
     </div>
+  );
+}
+
+function SortableQueueItem({ activeRound, index, item, onRemove }) {
+  const {
+    attributes,
+    isDragging,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id: item.id, disabled: activeRound });
+
+  return (
+    <li
+      className={isDragging ? "dragging" : ""}
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+    >
+      <button
+        className="queue-drag-handle"
+        disabled={activeRound}
+        type="button"
+        {...attributes}
+        {...listeners}
+        aria-label={`Drag to reorder ${item.title}`}
+      >
+        <span aria-hidden="true">⠿</span>
+      </button>
+      <small>{String(index + 1).padStart(2, "0")}</small>
+      <span>{item.title}</span>
+      <button
+        className="queue-remove"
+        disabled={activeRound}
+        onClick={onRemove}
+        type="button"
+        aria-label={`Remove ${item.title}`}
+      >
+        ×
+      </button>
+    </li>
   );
 }
 

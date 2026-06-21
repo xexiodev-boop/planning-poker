@@ -123,6 +123,29 @@ facilitator.send({
 });
 const observerConfigured = await observer.waitFor((room) => room.viewer.role === "observer");
 assert.equal(observerConfigured.participants.find((person) => person.id === observerPerson.id).role, "observer");
+assert.deepEqual(observerConfigured.settings.reactionPalette, ["👍", "🤔", "👀", "🎉", "☕", "✋"]);
+
+observer.send({ type: "send_reaction", reaction: "👍" });
+const reacted = await facilitator.waitFor(
+  (room) => room.reactions.some((reaction) => reaction.participantId === observerPerson.id),
+);
+assert.equal(reacted.reactions.at(-1).reaction, "👍");
+
+await new Promise((resolve) => setTimeout(resolve, 1250));
+observer.send({ type: "send_reaction", reaction: "✋" });
+const handRaised = await facilitator.waitFor(
+  (room) => room.raisedHands.some((hand) => hand.participantId === observerPerson.id),
+);
+assert.equal(handRaised.raisedHands.length, 1);
+observer.send({ type: "lower_hand" });
+await facilitator.waitFor((room) => room.raisedHands.length === 0);
+
+facilitator.send({ type: "set_reactions_muted", muted: true });
+await participant.waitFor((room) => room.settings.reactionsMuted);
+facilitator.send({ type: "clear_reactions" });
+await participant.waitFor((room) => room.reactions.length === 0);
+facilitator.send({ type: "set_reactions_muted", muted: false });
+await participant.waitFor((room) => !room.settings.reactionsMuted);
 
 facilitator.send({
   type: "update_settings",
@@ -156,7 +179,27 @@ const withBacklog = await participant.waitFor(
   (room) => room.items.filter((item) => item.status === "pending").length === 2,
 );
 const selectedItem = withBacklog.items.find((item) => item.title === "Smoke test task");
+const secondQueuedItem = withBacklog.items.find((item) => item.title === "Second backlog item");
 assert.ok(selectedItem);
+
+facilitator.send({
+  type: "reorder_items",
+  itemIds: [secondQueuedItem.id, selectedItem.id],
+});
+const reordered = await participant.waitFor(
+  (room) => room.items.filter((item) => item.status === "pending")[0]?.id === secondQueuedItem.id,
+);
+assert.deepEqual(
+  reordered.items.filter((item) => item.status === "pending").map((item) => item.title),
+  ["Second backlog item", "Smoke test task"],
+);
+facilitator.send({
+  type: "reorder_items",
+  itemIds: [selectedItem.id, secondQueuedItem.id],
+});
+await participant.waitFor(
+  (room) => room.items.filter((item) => item.status === "pending")[0]?.id === selectedItem.id,
+);
 
 facilitator.send({ type: "start_round", itemId: selectedItem.id });
 const voting = await participant.waitFor((room) => room.currentRound?.phase === "voting");
@@ -193,13 +236,22 @@ facilitator.send({ type: "restart_voting" });
 const restarted = await participant.waitFor(
   (room) => room.currentRound?.phase === "voting" && !room.currentRound.ownVote?.value,
 );
+await facilitator.waitFor(
+  (room) =>
+    room.currentRound?.phase === "voting" &&
+    room.participants.every((person) => !person.eligible || !person.hasVoted),
+);
 assert.equal(restarted.participants.some((person) => person.hasVoted), false);
 
 facilitator.send({ type: "select_vote", value: "5" });
 facilitator.send({ type: "confirm_vote" });
 participant.send({ type: "select_vote", value: "8" });
 participant.send({ type: "confirm_vote" });
-await facilitator.waitFor((room) => room.currentRound?.revealAllowed);
+await facilitator.waitFor(
+  (room) =>
+    room.currentRound?.phase === "voting" &&
+    room.participants.filter((person) => person.eligible).every((person) => person.hasVoted),
+);
 facilitator.send({ type: "reveal" });
 await facilitator.waitFor((room) => room.currentRound?.phase === "revealed");
 

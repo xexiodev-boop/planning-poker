@@ -103,6 +103,16 @@ Item preparation lives in a dedicated full-screen workspace opened from Room Set
 round launcher keeps the remaining queue visible on the left so the facilitator can select the
 next item directly.
 
+Pending items can be reordered by drag and drop. Their shared order determines the queue shown
+to the facilitator, and the first pending item is selected automatically when preparing a round.
+
+Room members receive short in-app presence notifications when another person joins, reconnects,
+leaves, or is removed.
+
+Facilitators can enable a curated reaction palette, pause or resume reactions, and clear the
+current reaction state. Ordinary reactions float briefly and are not stored in estimation
+history; raised hands persist until lowered or cleared. A server-side cooldown prevents spam.
+
 During an active round, the facilitator can edit its title, clear all cards and run another
 ballot, or cancel the round. Cancelled backlog items remain pending; cancelled ad-hoc items are
 discarded.

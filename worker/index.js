@@ -9,6 +9,10 @@ const MAX_PENDING_ITEMS = 50;
 const MAX_COMPLETED_ESTIMATES = 100;
 const MAX_CARDS = 16;
 const IDENTITY_COOKIE = "point_taken_identity";
+const REACTION_COOLDOWN_MS = 1200;
+const REACTION_LIFETIME_MS = 5000;
+const DEFAULT_REACTION_PALETTE = ["👍", "🤔", "👀", "🎉", "☕", "✋"];
+const ALLOWED_REACTIONS = new Set(DEFAULT_REACTION_PALETTE);
 const DEFAULT_REVEAL_DELAY_SECONDS = 30;
 const ALLOWED_REVEAL_DELAYS = new Set([0, 15, 30, 60, 90]);
 const ALLOWED_SUGGESTION_ALGORITHMS = new Set([
@@ -404,9 +408,14 @@ export class PlanningRoom {
     room.settings ??= {};
     room.settings.suggestionAlgorithm ??= "most_votes";
     room.settings.revealDelaySeconds ??= DEFAULT_REVEAL_DELAY_SECONDS;
+    room.settings.reactionsEnabled ??= true;
+    room.settings.reactionPalette ??= [...DEFAULT_REACTION_PALETTE];
+    room.settings.reactionsMuted ??= false;
     room.isLocked ??= false;
     room.isClosed ??= false;
     room.items ??= [];
+    room.reactions ??= [];
+    room.raisedHands ??= [];
     if (room.schemaVersion < CURRENT_SCHEMA_VERSION) {
       room.schemaVersion = CURRENT_SCHEMA_VERSION;
       await this.ctx.storage.put("room", room);
@@ -650,6 +659,63 @@ export class PlanningRoom {
           if (!ALLOWED_REVEAL_DELAYS.has(delay)) throw new Error("Unsupported reveal timer.");
           room.settings.revealDelaySeconds = delay;
         }
+        if (event.reactionsEnabled !== undefined) {
+          room.settings.reactionsEnabled = Boolean(event.reactionsEnabled);
+        }
+        if (event.reactionPalette !== undefined) {
+          if (!Array.isArray(event.reactionPalette)) throw new Error("Reaction palette must be a list.");
+          const palette = [...new Set(event.reactionPalette)]
+            .filter((reaction) => ALLOWED_REACTIONS.has(reaction));
+          if (palette.length === 0) throw new Error("Keep at least one reaction available.");
+          room.settings.reactionPalette = palette;
+        }
+        break;
+      }
+
+      case "send_reaction": {
+        if (!room.settings.reactionsEnabled || room.settings.reactionsMuted) {
+          throw new Error("Reactions are currently paused.");
+        }
+        const reaction = String(event.reaction ?? "");
+        if (!room.settings.reactionPalette.includes(reaction) || !ALLOWED_REACTIONS.has(reaction)) {
+          throw new Error("That reaction is not available.");
+        }
+        const now = Date.now();
+        if (participant.lastReactionAt && now - participant.lastReactionAt < REACTION_COOLDOWN_MS) {
+          throw new Error("Give reactions a moment to breathe.");
+        }
+        participant.lastReactionAt = now;
+        if (reaction === "✋") {
+          if (!room.raisedHands.includes(participant.id)) room.raisedHands.push(participant.id);
+        } else {
+          room.reactions = room.reactions
+            .filter(({ createdAt }) => now - createdAt < REACTION_LIFETIME_MS)
+            .concat({
+              id: crypto.randomUUID(),
+              participantId: participant.id,
+              reaction,
+              createdAt: now,
+            })
+            .slice(-30);
+        }
+        break;
+      }
+
+      case "lower_hand": {
+        room.raisedHands = room.raisedHands.filter((id) => id !== participant.id);
+        break;
+      }
+
+      case "set_reactions_muted": {
+        if (!isFacilitator) throw new Error("Only the facilitator can pause reactions.");
+        room.settings.reactionsMuted = Boolean(event.muted);
+        break;
+      }
+
+      case "clear_reactions": {
+        if (!isFacilitator) throw new Error("Only the facilitator can clear reactions.");
+        room.reactions = [];
+        room.raisedHands = [];
         break;
       }
 
@@ -696,6 +762,8 @@ export class PlanningRoom {
           throw new Error("That participant cannot be removed.");
         }
         room.participants = room.participants.filter(({ id }) => id !== target.id);
+        room.raisedHands = room.raisedHands.filter((id) => id !== target.id);
+        room.reactions = room.reactions.filter(({ participantId }) => participantId !== target.id);
         if (room.currentRound && room.currentRound.phase !== "finalized") {
           room.currentRound.eligibleParticipantIds =
             room.currentRound.eligibleParticipantIds.filter((id) => id !== target.id);
@@ -746,6 +814,29 @@ export class PlanningRoom {
         const item = room.items.find(({ id }) => id === event.itemId);
         if (!item || item.status !== "pending") throw new Error("That pending item was not found.");
         room.items = room.items.filter(({ id }) => id !== item.id);
+        break;
+      }
+
+      case "reorder_items": {
+        if (!isFacilitator) throw new Error("Only the facilitator can reorder estimation items.");
+        if (room.currentRound && room.currentRound.phase !== "finalized") {
+          throw new Error("Items can only be reordered between rounds.");
+        }
+        const pendingItems = room.items.filter(({ status }) => status === "pending");
+        const orderedIds = Array.isArray(event.itemIds) ? event.itemIds : [];
+        if (
+          orderedIds.length !== pendingItems.length ||
+          new Set(orderedIds).size !== orderedIds.length ||
+          pendingItems.some(({ id }) => !orderedIds.includes(id))
+        ) {
+          throw new Error("The pending item order is no longer current.");
+        }
+        const pendingById = new Map(pendingItems.map((item) => [item.id, item]));
+        const reordered = orderedIds.map((id) => pendingById.get(id));
+        let pendingIndex = 0;
+        room.items = room.items.map((item) =>
+          item.status === "pending" ? reordered[pendingIndex++] : item,
+        );
         break;
       }
 
@@ -929,6 +1020,8 @@ export class PlanningRoom {
 
   roomView(room, viewer) {
     const round = room.currentRound;
+    const now = Date.now();
+    room.reactions = room.reactions.filter(({ createdAt }) => now - createdAt < REACTION_LIFETIME_MS);
     const votesVisible = round?.phase === "revealed" || round?.phase === "finalized";
     const ownVote = round?.votes[viewer.id] ?? null;
 
@@ -940,6 +1033,22 @@ export class PlanningRoom {
       isLocked: room.isLocked,
       isClosed: room.isClosed,
       closedAt: room.closedAt ?? null,
+      reactions: room.reactions.map((reaction) => {
+        const reactor = room.participants.find(({ id }) => id === reaction.participantId);
+        return {
+          ...reaction,
+          participantName: reactor ? displayName(reactor) : "Someone",
+          color: reactor?.color ?? "#607069",
+        };
+      }),
+      raisedHands: room.raisedHands
+        .map((participantId) => room.participants.find(({ id }) => id === participantId))
+        .filter(Boolean)
+        .map((person) => ({
+          participantId: person.id,
+          participantName: displayName(person),
+          color: person.color,
+        })),
       items: room.items,
       expiresAt: room.expiresAt,
       viewer: {
