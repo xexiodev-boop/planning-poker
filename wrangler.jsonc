@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "point-taken",
+  "name": "planning-poker",
   "main": "./worker/index.js",
   "compatibility_date": "2026-06-21",
   "assets": {
