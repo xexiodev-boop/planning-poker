@@ -94,6 +94,7 @@ Between rounds, the facilitator can:
 - Set the reveal reminder to off, 15, 30, 60, or 90 seconds.
 - Lock and unlock the room for new participants.
 - Permanently close the room, leaving its completed history read-only.
+- Permanently delete the room and all stored data immediately.
 
 Every participant can copy the room invitation link. Locking prevents new identities from
 joining but still permits existing participants to reconnect.
@@ -106,7 +107,8 @@ round launcher keeps the remaining queue visible on the left so the facilitator 
 next item directly.
 
 Pending items can be reordered by drag and drop. Their shared order determines the queue shown
-to the facilitator, and the first pending item is selected automatically when preparing a round.
+to the facilitator, the first pending item is selected automatically when preparing a round,
+and item titles can be edited inline between rounds.
 
 Room members receive short in-app presence notifications when another person joins, reconnects,
 leaves, or is removed.

@@ -22,7 +22,7 @@ import { HomePage } from "./components/HomePage.jsx";
 import { useConfirmation } from "./hooks/useConfirmation.jsx";
 import { api } from "./lib/api.js";
 import { exportHistory } from "./lib/export.js";
-import { rememberRoom } from "./lib/recentRoom.js";
+import { forgetRoom, rememberRoom } from "./lib/recentRoom.js";
 
 const ROOM_PATH = /^\/room\/([a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-f0-9]{6})\/?$/;
 const SUGGESTION_ALGORITHMS = [
@@ -82,6 +82,12 @@ function RoomPage({ roomId }) {
   const socketRef = useRef(null);
 
   useEffect(() => {
+    if (!error || access === "join") return undefined;
+    const timer = window.setTimeout(() => setError(""), 5000);
+    return () => window.clearTimeout(timer);
+  }, [access, error]);
+
+  useEffect(() => {
     if (room) rememberRoom(room);
   }, [room]);
 
@@ -108,12 +114,21 @@ function RoomPage({ roomId }) {
           const message = JSON.parse(event.data);
           if (message.type === "state") setRoom(message.room);
           if (message.type === "error") setError(message.message);
+          if (message.type === "room_deleted") {
+            forgetRoom(roomId);
+            window.location.assign("/");
+          }
         } catch {
           setError("The room sent an unreadable update. Reconnecting may help.");
         }
       };
       socket.onclose = (event) => {
         if (cancelled) return;
+        if (event.code === 4002) {
+          forgetRoom(roomId);
+          window.location.assign("/");
+          return;
+        }
         if (event.code === 1008 || event.code === 1001 || event.code === 4001) {
           setAccess("join");
           setRoom(null);
@@ -269,7 +284,12 @@ function Room({ room, send, status, error, onError }) {
         </div>
       </header>
 
-      {error && <div className="toast">{error}</div>}
+      {error && (
+        <div className="toast" role="alert">
+          <span>{error}</span>
+          <button aria-label="Dismiss message" onClick={() => onError("")} type="button">×</button>
+        </div>
+      )}
       <div className="presence-notifications" aria-live="polite">
         {presenceNotices.map((notice) => (
           <div className={`presence-notice ${notice.kind}`} key={notice.id}>
@@ -555,7 +575,7 @@ function StartRound({ room, send, previousRound, onManageItems }) {
                   autoFocus={!pendingItems.length}
                   maxLength={160}
                   onChange={(event) => setTitle(event.target.value)}
-                  placeholder="Add team mentions to comments"
+                  placeholder="Describe the item to estimate"
                   value={title}
                 />
               </label>
@@ -617,6 +637,13 @@ function VotingStage({ room, send }) {
     send({ type: "reveal" });
   }
 
+  function showHand() {
+    document.getElementById(`voting-hand-${round.id}`)?.scrollIntoView({
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      block: "center",
+    });
+  }
+
   return (
     <div className="round-stage voting-stage">
       <p className="eyebrow">Now estimating</p>
@@ -642,6 +669,13 @@ function VotingStage({ room, send }) {
         <p className="stage-hint">
           {round.ownVote?.confirmed ? "Your vote is locked. You can still choose another card." : "Choose your card below."}
         </p>
+      )}
+      {!round.ownVote?.value && room.participants.some(
+        (person) => person.id === room.viewer.id && person.eligible,
+      ) && (
+        <button className="choose-card-cue" onClick={showHand} type="button">
+          Choose a card <span aria-hidden="true">↓</span>
+        </button>
       )}
       {confirmationDialog}
     </div>
@@ -731,9 +765,26 @@ function FacilitatorRoundControls({ room, send }) {
 
 function CardHand({ room, send }) {
   const round = room.currentRound;
+  const viewer = room.participants.find(({ id }) => id === room.viewer.id);
+  const selected = round?.ownVote?.value;
+  const confirmed = round?.ownVote?.confirmed;
+  const handRef = useRef(null);
+  const shouldShowHand = !room.isClosed && round?.phase === "voting" && viewer?.eligible && !selected;
+
+  useEffect(() => {
+    if (!shouldShowHand) return undefined;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timer = window.setTimeout(() => {
+      handRef.current?.scrollIntoView({
+        behavior: reducedMotion ? "auto" : "smooth",
+        block: "center",
+      });
+    }, 450);
+    return () => window.clearTimeout(timer);
+  }, [round?.id, shouldShowHand]);
+
   if (room.isClosed || !round || round.phase !== "voting") return null;
 
-  const viewer = room.participants.find(({ id }) => id === room.viewer.id);
   if (!viewer?.eligible) {
     return (
       <div className="late-join-note">
@@ -744,15 +795,17 @@ function CardHand({ room, send }) {
     );
   }
 
-  const selected = round.ownVote?.value;
-  const confirmed = round.ownVote?.confirmed;
-
   return (
-    <section className="hand">
+    <section
+      className={`hand ${selected ? "" : "needs-action"}`}
+      id={`voting-hand-${round.id}`}
+      ref={handRef}
+    >
       <div className="hand-heading">
         <div>
           <p className="eyebrow">Your hand</p>
           <h3>{confirmed ? "Vote locked" : selected ? "Ready to lock it in?" : "Pick the closest fit"}</h3>
+          {!selected && <small className="hand-prompt">Select one card to continue</small>}
         </div>
         {selected && !confirmed && (
           <button className="primary-button compact" onClick={() => send({ type: "confirm_vote" })} type="button">
@@ -1086,13 +1139,15 @@ function ResultDetail({ item, onClose }) {
     <div className="workspace-backdrop" onMouseDown={onClose}>
       <section className="results-screen workspace-modal" onMouseDown={(event) => event.stopPropagation()}>
         <header>
-          <button className="back-button" onClick={onClose} type="button">← Close details</button>
           <div>
             <p className="eyebrow">Completed estimate</p>
             <h1>{item.title}</h1>
             <p>{new Date(item.completedAt).toLocaleString()}</p>
           </div>
-          <span className="completed-estimate">{item.finalValue}</span>
+          <div className="workspace-header-actions">
+            <span className="completed-estimate">{item.finalValue}</span>
+            <button className="workspace-close" onClick={onClose} type="button" aria-label="Close details">×</button>
+          </div>
         </header>
         <main className="result-detail">
           <section className="result-detail-summary">
@@ -1197,7 +1252,7 @@ function RoomSettings({ room, send, onClose, onManageItems }) {
 
   async function closeRoom() {
     const accepted = await confirm({
-      title: "Close this room permanently?",
+      title: "Close this room?",
       message: "Existing participants can review completed estimates, but nobody will be able to vote or join.",
       confirmLabel: "Close room",
       tone: "danger",
@@ -1205,6 +1260,17 @@ function RoomSettings({ room, send, onClose, onManageItems }) {
     if (!accepted) return;
     send({ type: "close_room" });
     onClose();
+  }
+
+  async function deleteRoom() {
+    const accepted = await confirm({
+      title: "Delete this room permanently?",
+      message: "All items, votes, participants, and completed estimates will be erased immediately. This cannot be undone.",
+      confirmLabel: "Delete room",
+      tone: "danger",
+    });
+    if (!accepted) return;
+    send({ type: "delete_room" });
   }
 
   return (
@@ -1408,13 +1474,24 @@ function RoomSettings({ room, send, onClose, onManageItems }) {
           </section>
 
           <section className="danger-zone">
-            <div>
-              <h3>Close room</h3>
-              <p>Make this session permanently read-only until it expires.</p>
+            <div className="danger-action">
+              <div>
+                <h3>Close room</h3>
+                <p>Make this session read-only until it expires.</p>
+              </div>
+              <button className="danger-button" disabled={activeRound} onClick={closeRoom} type="button">
+                Close room
+              </button>
             </div>
-            <button className="danger-button" disabled={activeRound} onClick={closeRoom} type="button">
-              Close room
-            </button>
+            <div className="danger-action delete">
+              <div>
+                <h3>Delete room</h3>
+                <p>Immediately erase the room and all of its data.</p>
+              </div>
+              <button className="danger-button solid" onClick={deleteRoom} type="button">
+                Delete room
+              </button>
+            </div>
           </section>
         </div>
 
@@ -1488,13 +1565,15 @@ function ItemManager({ room, send, onClose }) {
     <div className="workspace-backdrop" onMouseDown={onClose}>
       <section className="items-screen workspace-modal" onMouseDown={(event) => event.stopPropagation()}>
         <header className="items-screen-header">
-          <button className="back-button" onClick={onClose} type="button">← Close items</button>
           <div>
             <p className="eyebrow">Estimation queue</p>
             <h1>Items to estimate</h1>
             <p>Prepare the session before voting starts. Add one item per line.</p>
           </div>
-          <span className="items-room-name">{room.name}</span>
+          <div className="workspace-header-actions">
+            <span className="items-room-name">{room.name}</span>
+            <button className="workspace-close" onClick={onClose} type="button" aria-label="Close items">×</button>
+          </div>
         </header>
 
         {activeRound && (
@@ -1550,6 +1629,7 @@ function ItemManager({ room, send, onClose }) {
                       item={item}
                       key={item.id}
                       onRemove={() => send({ type: "remove_item", itemId: item.id })}
+                      onUpdate={(title) => send({ type: "update_item", itemId: item.id, title })}
                     />
                   ))}
                 </ol>
@@ -1574,7 +1654,9 @@ function ItemManager({ room, send, onClose }) {
   );
 }
 
-function SortableQueueItem({ activeRound, index, item, onRemove }) {
+function SortableQueueItem({ activeRound, index, item, onRemove, onUpdate }) {
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(item.title);
   const {
     attributes,
     isDragging,
@@ -1582,7 +1664,19 @@ function SortableQueueItem({ activeRound, index, item, onRemove }) {
     setNodeRef,
     transform,
     transition,
-  } = useSortable({ id: item.id, disabled: activeRound });
+  } = useSortable({ id: item.id, disabled: activeRound || editing });
+
+  useEffect(() => {
+    if (!editing) setTitle(item.title);
+  }, [editing, item.title]);
+
+  function save(event) {
+    event.preventDefault();
+    const nextTitle = title.trim();
+    if (!nextTitle) return;
+    onUpdate(nextTitle);
+    setEditing(false);
+  }
 
   return (
     <li
@@ -1601,16 +1695,50 @@ function SortableQueueItem({ activeRound, index, item, onRemove }) {
         <span aria-hidden="true">⠿</span>
       </button>
       <small>{String(index + 1).padStart(2, "0")}</small>
-      <span>{item.title}</span>
-      <button
-        className="queue-remove"
-        disabled={activeRound}
-        onClick={onRemove}
-        type="button"
-        aria-label={`Remove ${item.title}`}
-      >
-        ×
-      </button>
+      {editing ? (
+        <form className="queue-item-editor" onSubmit={save}>
+          <input
+            autoFocus
+            maxLength={160}
+            onChange={(event) => setTitle(event.target.value)}
+            value={title}
+          />
+          <button type="submit">Save</button>
+          <button
+            onClick={() => {
+              setTitle(item.title);
+              setEditing(false);
+            }}
+            type="button"
+          >
+            Cancel
+          </button>
+        </form>
+      ) : (
+        <>
+          <span>{item.title}</span>
+          <div className="queue-item-actions">
+            <button
+              className="queue-edit"
+              disabled={activeRound}
+              onClick={() => setEditing(true)}
+              type="button"
+              aria-label={`Edit ${item.title}`}
+            >
+              Edit
+            </button>
+            <button
+              className="queue-remove"
+              disabled={activeRound}
+              onClick={onRemove}
+              type="button"
+              aria-label={`Remove ${item.title}`}
+            >
+              ×
+            </button>
+          </div>
+        </>
+      )}
     </li>
   );
 }

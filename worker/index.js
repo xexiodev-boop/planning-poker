@@ -485,6 +485,20 @@ export class PlanningRoom {
         throw new Error("Room message is too large.");
       }
       const event = JSON.parse(message);
+      if (event.type === "delete_room") {
+        requireFacilitator(participant, "delete the room");
+        for (const connectedSocket of this.ctx.getWebSockets()) {
+          try {
+            connectedSocket.send(JSON.stringify({ type: "room_deleted" }));
+            connectedSocket.close(4002, "Room deleted");
+          } catch {
+            // The room is being destroyed; disconnected sockets need no further cleanup.
+          }
+        }
+        safeLog("room_deleted", { roomId: room.id });
+        await this.ctx.storage.deleteAll();
+        return;
+      }
       await this.applyAction(room, participant, event);
       await this.saveRoom(room);
       await this.broadcast(room);
@@ -709,6 +723,24 @@ export class PlanningRoom {
         const item = room.items.find(({ id }) => id === event.itemId);
         if (!item || item.status !== "pending") throw new Error("That pending item was not found.");
         room.items = room.items.filter(({ id }) => id !== item.id);
+        break;
+      }
+
+      case "update_item": {
+        requireFacilitator(participant, "edit estimation items");
+        requireBetweenRounds(room, "Items can only be changed between rounds.");
+        const item = room.items.find(({ id }) => id === event.itemId);
+        if (!item || item.status !== "pending") throw new Error("That pending item was not found.");
+        const title = cleanTitle(event.title);
+        if (!title) throw new Error("Enter an item title.");
+        const duplicate = room.items.some(
+          (candidate) =>
+            candidate.id !== item.id &&
+            candidate.status === "pending" &&
+            candidate.title.toLowerCase() === title.toLowerCase(),
+        );
+        if (duplicate) throw new Error("That item is already in the estimation queue.");
+        item.title = title;
         break;
       }
 

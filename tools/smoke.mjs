@@ -275,6 +275,15 @@ assert.deepEqual(
 );
 
 const secondItem = finalized.items.find((item) => item.title === "Second backlog item");
+facilitator.send({
+  type: "update_item",
+  itemId: secondItem.id,
+  title: "Edited second backlog item",
+});
+const itemEdited = await participant.waitFor(
+  (room) => room.items.some((item) => item.id === secondItem.id && item.title === "Edited second backlog item"),
+);
+assert.equal(itemEdited.items.find((item) => item.id === secondItem.id).title, "Edited second backlog item");
 facilitator.send({ type: "start_round", itemId: secondItem.id });
 await participant.waitFor((room) => room.currentRound?.itemId === secondItem.id);
 facilitator.send({ type: "cancel_round" });
@@ -316,6 +325,13 @@ await assert.rejects(
     body: JSON.stringify({ name: "Too late" }),
   }, { cookie: "" }),
   /closed/,
+);
+
+participant.send({ type: "delete_room" });
+await new Promise((resolve) => setTimeout(resolve, 150));
+await assert.rejects(
+  request(`/api/rooms/${created.roomId}/state`, { method: "GET" }, participantSession),
+  /expired or does not exist/,
 );
 
 const rejectedOrigin = await fetch(`${baseUrl}/api/rooms`, {

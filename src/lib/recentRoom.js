@@ -37,3 +37,11 @@ export function rememberRoom(room) {
 export function dismissRecentRoom(roomId) {
   localStorage.setItem(DISMISSED_ROOM_KEY, roomId);
 }
+
+export function forgetRoom(roomId) {
+  const recent = readRecentRoom();
+  if (recent?.roomId === roomId) localStorage.removeItem(RECENT_ROOM_KEY);
+  if (localStorage.getItem(DISMISSED_ROOM_KEY) === roomId) {
+    localStorage.removeItem(DISMISSED_ROOM_KEY);
+  }
+}

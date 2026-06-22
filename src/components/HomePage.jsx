@@ -88,7 +88,7 @@ export function HomePage() {
               autoFocus
               maxLength={32}
               onChange={(event) => setName(event.target.value)}
-              placeholder="Alex"
+              placeholder="Your name"
               value={name}
             />
           </label>
