@@ -1,0 +1,51 @@
+export function csvCell(value) {
+  const text = String(value ?? "");
+  const safe = /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
+  return `"${safe.replaceAll('"', '""')}"`;
+}
+
+function downloadText(filename, content, type) {
+  const url = URL.createObjectURL(new Blob([content], { type }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+export function exportHistory(room, format) {
+  const filename = room.name.toLowerCase().replaceAll(" ", "-");
+
+  if (format === "csv") {
+    const rows = [["Item", "Final estimate", "Suggested estimate", "Agreement", "Voter", "Vote", "Confirmed", "Completed"]];
+    room.history.slice().reverse().forEach((item) => {
+      item.votes.forEach((vote) => rows.push([
+        item.title,
+        item.finalValue,
+        item.suggestion?.value ?? "",
+        item.metrics ? `${item.metrics.consensusPercent}%` : "",
+        vote.participantName,
+        vote.value ?? "",
+        vote.confirmed ? "Yes" : "No",
+        new Date(item.completedAt).toISOString(),
+      ]));
+    });
+    downloadText(
+      `${filename}-estimates.csv`,
+      rows.map((row) => row.map(csvCell).join(",")).join("\n"),
+      "text/csv",
+    );
+    return;
+  }
+
+  const lines = [`# ${room.name} estimates`, ""];
+  room.history.slice().reverse().forEach((item) => {
+    lines.push(`## ${item.title}`, "", `- Final estimate: **${item.finalValue}**`);
+    lines.push(`- Suggested estimate: ${item.suggestion?.value ?? "None"}`);
+    if (item.metrics) lines.push(`- Agreement: ${item.metrics.consensusPercent}%`);
+    lines.push("", "| Participant | Vote |", "| --- | --- |");
+    item.votes.forEach((vote) => lines.push(`| ${vote.participantName} | ${vote.value ?? "No vote"} |`));
+    lines.push("");
+  });
+  downloadText(`${filename}-estimates.md`, lines.join("\n"), "text/markdown");
+}

@@ -31,8 +31,10 @@ The app is normally available at `http://localhost:5173`.
 ## Verification
 
 ```bash
-npm run build
+npm run check
 ```
+
+This runs ESLint, focused Vitest unit and authorization tests, and the production build.
 
 With the development server running on port `4175`, the end-to-end room smoke test is:
 
@@ -112,6 +114,10 @@ leaves, or is removed.
 Facilitators can enable a curated reaction palette, pause or resume reactions, and clear the
 current reaction state. Ordinary reactions float briefly and are not stored in estimation
 history; raised hands persist until lowered or cleared. A server-side cooldown prevents spam.
+
+The browser remembers safe metadata for the most recent room where the user is facilitator. The
+home page shows a dismissible return-and-bookmark reminder until that room expires. Authentication
+remains exclusively in the HttpOnly room cookie.
 
 During an active round, the facilitator can edit its title, clear all cards and run another
 ballot, or cancel the round. Cancelled backlog items remain pending; cancelled ad-hoc items are

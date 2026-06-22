@@ -1,18 +1,20 @@
 import { getDeck } from "../shared/decks.js";
+import { ROOM_LIMITS } from "../shared/limits.js";
+import {
+  byteLength,
+  calculateResultMetrics,
+  calculateSuggestion,
+  cleanCards,
+  readJson,
+} from "./room-logic.js";
 
 const ROOM_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000;
 const CURRENT_SCHEMA_VERSION = 1;
-const MAX_REQUEST_BYTES = 16 * 1024;
-const MAX_WEBSOCKET_MESSAGE_BYTES = 16 * 1024;
-const MAX_PARTICIPANTS = 20;
-const MAX_PENDING_ITEMS = 50;
-const MAX_COMPLETED_ESTIMATES = 100;
-const MAX_CARDS = 16;
 const IDENTITY_COOKIE = "point_taken_identity";
 const REACTION_COOLDOWN_MS = 1200;
 const REACTION_LIFETIME_MS = 5000;
-const DEFAULT_REACTION_PALETTE = ["👍", "🤔", "👀", "🎉", "☕", "✋"];
-const ALLOWED_REACTIONS = new Set(DEFAULT_REACTION_PALETTE);
+const DEFAULT_REACTION_PALETTE = ["👍", "🤔", "👀", "🎉", "☕"];
+const ALLOWED_REACTIONS = new Set([...DEFAULT_REACTION_PALETTE, "✋"]);
 const DEFAULT_REVEAL_DELAY_SECONDS = 30;
 const ALLOWED_REVEAL_DELAYS = new Set([0, 15, 30, 60, 90]);
 const ALLOWED_SUGGESTION_ALGORITHMS = new Set([
@@ -39,26 +41,6 @@ const ANIMALS = ["Badger", "Falcon", "Fox", "Koala", "Otter", "Panda", "Raven", 
 
 function json(data, status = 200) {
   return Response.json(data, { status });
-}
-
-function byteLength(value) {
-  return new TextEncoder().encode(value).byteLength;
-}
-
-async function readJson(request) {
-  if (!request.headers.get("Content-Type")?.toLowerCase().startsWith("application/json")) {
-    throw new Error("Content-Type must be application/json.");
-  }
-  const contentLength = Number(request.headers.get("Content-Length") ?? 0);
-  if (contentLength > MAX_REQUEST_BYTES) throw new Error("Request is too large.");
-  const text = await request.text();
-  if (byteLength(text) > MAX_REQUEST_BYTES) throw new Error("Request is too large.");
-  if (!text) return {};
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw new Error("Request body must be valid JSON.");
-  }
 }
 
 function cookieValue(request, name) {
@@ -148,17 +130,6 @@ function cleanItemTitles(values) {
   return titles;
 }
 
-function cleanCards(cards) {
-  if (!Array.isArray(cards)) throw new Error("Cards must be provided as a list.");
-  const cleaned = cards
-    .map((card) => String(card ?? "").trim().slice(0, 12))
-    .filter(Boolean);
-  if (cleaned.length < 2) throw new Error("A deck needs at least two cards.");
-  if (cleaned.length > MAX_CARDS) throw new Error(`A deck can contain at most ${MAX_CARDS} cards.`);
-  if (new Set(cleaned).size !== cleaned.length) throw new Error("Deck cards must be unique.");
-  return cleaned;
-}
-
 function cloneDeck(deckId) {
   const deck = getDeck(deckId);
   return { ...deck, cards: [...deck.cards] };
@@ -185,103 +156,22 @@ function findParticipantByToken(room, token) {
   return room.participants.find((participant) => participant.token === token);
 }
 
-function cardIndex(deck, value) {
-  return deck.cards.indexOf(value);
+function requireFacilitator(participant, action) {
+  if (participant.role !== "facilitator") {
+    throw new Error(`Only the facilitator can ${action}.`);
+  }
 }
 
-function parseNumericCard(value) {
-  if (value === "½") return 0.5;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
+function requireBetweenRounds(room, message) {
+  if (room.currentRound && room.currentRound.phase !== "finalized") {
+    throw new Error(message);
+  }
 }
 
-function calculateSuggestion(round, deck, algorithm) {
-  if (algorithm === "none") return null;
-
-  const values = Object.values(round.votes)
-    .filter((vote) => vote?.confirmed && vote.value !== "?" && vote.value !== "☕")
-    .map((vote) => vote.value)
-    .filter((value) => cardIndex(deck, value) >= 0);
-
-  if (values.length === 0) return null;
-
-  const tally = new Map();
-  values.forEach((value) => {
-    tally.set(value, (tally.get(value) ?? 0) + 1);
-  });
-
-  if (algorithm === "highest") {
-    const value = [...values].sort((a, b) => cardIndex(deck, a) - cardIndex(deck, b)).at(-1);
-    return { value, algorithm, tied: false };
-  }
-
-  if (algorithm === "median") {
-    const ordered = [...values].sort((a, b) => cardIndex(deck, a) - cardIndex(deck, b));
-    return { value: ordered[Math.floor(ordered.length / 2)], algorithm, tied: false };
-  }
-
-  if (algorithm === "average_up") {
-    const numericCards = deck.cards
-      .map((value) => ({ value, number: parseNumericCard(value) }))
-      .filter((card) => card.number !== null)
-      .sort((a, b) => a.number - b.number);
-    const numericVotes = values.map(parseNumericCard).filter((value) => value !== null);
-    if (numericCards.length === 0 || numericVotes.length === 0) return null;
-    const average = numericVotes.reduce((total, value) => total + value, 0) / numericVotes.length;
-    const selected = numericCards.find((card) => card.number >= average) ?? numericCards.at(-1);
-    return { value: selected.value, algorithm, average, tied: false };
-  }
-
-  const highestCount = Math.max(...tally.values());
-  const tied = [...tally.entries()]
-    .filter(([, count]) => count === highestCount)
-    .map(([value]) => value);
-  const ordered = tied.sort((a, b) => cardIndex(deck, a) - cardIndex(deck, b));
-
-  if (algorithm === "middle_ground" && ordered.length > 1) {
-    const firstIndex = cardIndex(deck, ordered[0]);
-    const lastIndex = cardIndex(deck, ordered.at(-1));
-    return {
-      value: deck.cards[Math.round((firstIndex + lastIndex) / 2)],
-      votes: highestCount,
-      algorithm,
-      tied: true,
-    };
-  }
-
-  return {
-    value: ordered.at(-1),
-    votes: highestCount,
-    algorithm,
-    tied: ordered.length > 1,
-  };
-}
-
-function calculateResultMetrics(round, deck) {
-  const confirmedValues = Object.values(round.votes)
-    .filter((vote) => vote?.confirmed)
-    .map((vote) => vote.value);
-  if (confirmedValues.length === 0) {
-    return { voteCount: 0, consensusPercent: 0, unanimous: false, low: null, high: null, spread: 0 };
-  }
-
-  const counts = new Map();
-  confirmedValues.forEach((value) => counts.set(value, (counts.get(value) ?? 0) + 1));
-  const highestCount = Math.max(...counts.values());
-  const orderedValues = confirmedValues
-    .filter((value) => value !== "?" && value !== "☕" && deck.cards.includes(value))
-    .sort((a, b) => deck.cards.indexOf(a) - deck.cards.indexOf(b));
-  const low = orderedValues[0] ?? null;
-  const high = orderedValues.at(-1) ?? null;
-
-  return {
-    voteCount: confirmedValues.length,
-    consensusPercent: Math.round((highestCount / confirmedValues.length) * 100),
-    unanimous: counts.size === 1,
-    low,
-    high,
-    spread: low && high ? deck.cards.indexOf(high) - deck.cards.indexOf(low) : 0,
-  };
+function everyoneConfirmed(round, participants) {
+  return round.eligibleParticipantIds.every(
+    (id) => participants.some((person) => person.id === id) && round.votes[id]?.confirmed,
+  );
 }
 
 export default {
@@ -331,7 +221,7 @@ export default {
       }
 
       const match = url.pathname.match(
-        /^\/api\/rooms\/([a-f0-9]{16}|[a-z0-9]+(?:-[a-z0-9]+){3})(?:\/(join|socket|state))?$/,
+        /^\/api\/rooms\/([a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-f0-9]{6})(?:\/(join|socket|state))?$/,
       );
       if (!match) {
         return withSecurityHeaders(json({ error: "Not found" }, 404));
@@ -410,6 +300,9 @@ export class PlanningRoom {
     room.settings.revealDelaySeconds ??= DEFAULT_REVEAL_DELAY_SECONDS;
     room.settings.reactionsEnabled ??= true;
     room.settings.reactionPalette ??= [...DEFAULT_REACTION_PALETTE];
+    room.settings.reactionPalette = room.settings.reactionPalette.filter(
+      (reaction) => reaction !== "✋",
+    );
     room.settings.reactionsMuted ??= false;
     room.isLocked ??= false;
     room.isClosed ??= false;
@@ -424,6 +317,9 @@ export class PlanningRoom {
   }
 
   async saveRoom(room, { touch = true } = {}) {
+    room.reactions = room.reactions.filter(
+      ({ createdAt }) => Date.now() - createdAt < REACTION_LIFETIME_MS,
+    );
     if (touch) {
       room.updatedAt = Date.now();
       room.expiresAt = room.updatedAt + ROOM_LIFETIME_MS;
@@ -488,6 +384,9 @@ export class PlanningRoom {
       settings: {
         suggestionAlgorithm: "most_votes",
         revealDelaySeconds: DEFAULT_REVEAL_DELAY_SECONDS,
+        reactionsEnabled: true,
+        reactionPalette: [...DEFAULT_REACTION_PALETTE],
+        reactionsMuted: false,
       },
       isLocked: false,
       isClosed: false,
@@ -496,6 +395,8 @@ export class PlanningRoom {
       expiresAt: now + ROOM_LIFETIME_MS,
       participants: [facilitator],
       items: [],
+      reactions: [],
+      raisedHands: [],
       currentRound: null,
       history: [],
     };
@@ -521,8 +422,8 @@ export class PlanningRoom {
 
     if (room.isClosed) return json({ error: "This room has been closed." }, 423);
     if (room.isLocked) return json({ error: "This room is not accepting new participants." }, 423);
-    if (room.participants.length >= MAX_PARTICIPANTS) {
-      return json({ error: `This room has reached its ${MAX_PARTICIPANTS}-person limit.` }, 409);
+    if (room.participants.length >= ROOM_LIMITS.participants) {
+      return json({ error: `This room has reached its ${ROOM_LIMITS.participants}-person limit.` }, 409);
     }
 
     const participant = newParticipant(input.name, "participant", room.participants.length);
@@ -577,7 +478,10 @@ export class PlanningRoom {
         messageWindowStartedAt: now - messageWindowStartedAt < 10000 ? messageWindowStartedAt : now,
         messageCount,
       });
-      if (typeof message !== "string" || byteLength(message) > MAX_WEBSOCKET_MESSAGE_BYTES) {
+      if (
+        typeof message !== "string" ||
+        byteLength(message) > ROOM_LIMITS.webSocketMessageBytes
+      ) {
         throw new Error("Room message is too large.");
       }
       const event = JSON.parse(message);
@@ -635,17 +539,14 @@ export class PlanningRoom {
   }
 
   async applyAction(room, participant, event) {
-    const isFacilitator = participant.role === "facilitator";
     const deck = room.deck;
 
     if (room.isClosed) throw new Error("This room is closed and can only be viewed.");
 
     switch (event.type) {
       case "update_settings": {
-        if (!isFacilitator) throw new Error("Only the facilitator can change room settings.");
-        if (room.currentRound && room.currentRound.phase !== "finalized") {
-          throw new Error("Room settings can only change between rounds.");
-        }
+        requireFacilitator(participant, "change room settings");
+        requireBetweenRounds(room, "Room settings can only change between rounds.");
 
         if (event.cards) room.deck.cards = cleanCards(event.cards);
         if (event.suggestionAlgorithm) {
@@ -677,7 +578,10 @@ export class PlanningRoom {
           throw new Error("Reactions are currently paused.");
         }
         const reaction = String(event.reaction ?? "");
-        if (!room.settings.reactionPalette.includes(reaction) || !ALLOWED_REACTIONS.has(reaction)) {
+        if (
+          !ALLOWED_REACTIONS.has(reaction) ||
+          (reaction !== "✋" && !room.settings.reactionPalette.includes(reaction))
+        ) {
           throw new Error("That reaction is not available.");
         }
         const now = Date.now();
@@ -707,29 +611,27 @@ export class PlanningRoom {
       }
 
       case "set_reactions_muted": {
-        if (!isFacilitator) throw new Error("Only the facilitator can pause reactions.");
+        requireFacilitator(participant, "pause reactions");
         room.settings.reactionsMuted = Boolean(event.muted);
         break;
       }
 
       case "clear_reactions": {
-        if (!isFacilitator) throw new Error("Only the facilitator can clear reactions.");
+        requireFacilitator(participant, "clear reactions");
         room.reactions = [];
         room.raisedHands = [];
         break;
       }
 
       case "set_room_lock": {
-        if (!isFacilitator) throw new Error("Only the facilitator can lock the room.");
+        requireFacilitator(participant, "lock the room");
         room.isLocked = Boolean(event.locked);
         break;
       }
 
       case "set_participant_role": {
-        if (!isFacilitator) throw new Error("Only the facilitator can change participant roles.");
-        if (room.currentRound && room.currentRound.phase !== "finalized") {
-          throw new Error("Roles can only change between rounds.");
-        }
+        requireFacilitator(participant, "change participant roles");
+        requireBetweenRounds(room, "Roles can only change between rounds.");
         const target = room.participants.find(({ id }) => id === event.participantId);
         if (!target || target.role === "facilitator") {
           throw new Error("That participant cannot be changed.");
@@ -742,10 +644,8 @@ export class PlanningRoom {
       }
 
       case "transfer_facilitator": {
-        if (!isFacilitator) throw new Error("Only the facilitator can transfer ownership.");
-        if (room.currentRound && room.currentRound.phase !== "finalized") {
-          throw new Error("Facilitator ownership can only transfer between rounds.");
-        }
+        requireFacilitator(participant, "transfer ownership");
+        requireBetweenRounds(room, "Facilitator ownership can only transfer between rounds.");
         const target = room.participants.find(({ id }) => id === event.participantId);
         if (!target || target.id === participant.id) {
           throw new Error("Choose another person to become facilitator.");
@@ -756,7 +656,7 @@ export class PlanningRoom {
       }
 
       case "remove_participant": {
-        if (!isFacilitator) throw new Error("Only the facilitator can remove participants.");
+        requireFacilitator(participant, "remove participants");
         const target = room.participants.find(({ id }) => id === event.participantId);
         if (!target || target.role === "facilitator") {
           throw new Error("That participant cannot be removed.");
@@ -768,30 +668,27 @@ export class PlanningRoom {
           room.currentRound.eligibleParticipantIds =
             room.currentRound.eligibleParticipantIds.filter((id) => id !== target.id);
           delete room.currentRound.votes[target.id];
-          const everyoneConfirmed = room.currentRound.eligibleParticipantIds.every(
-            (id) => room.currentRound.votes[id]?.confirmed,
-          );
-          if (everyoneConfirmed) room.currentRound.revealAllowed = true;
+          if (everyoneConfirmed(room.currentRound, room.participants)) {
+            room.currentRound.revealAllowed = true;
+          }
         }
         break;
       }
 
       case "add_items": {
-        if (!isFacilitator) throw new Error("Only the facilitator can add estimation items.");
-        if (room.currentRound && room.currentRound.phase !== "finalized") {
-          throw new Error("Items can only be changed between rounds.");
-        }
+        requireFacilitator(participant, "add estimation items");
+        requireBetweenRounds(room, "Items can only be changed between rounds.");
         const existingTitles = new Set(
           room.items.filter((item) => item.status === "pending").map((item) => item.title.toLowerCase()),
         );
         const requestedTitles = cleanItemTitles(event.titles);
-        const availableSlots = MAX_PENDING_ITEMS - existingTitles.size;
+        const availableSlots = ROOM_LIMITS.pendingItems - existingTitles.size;
         const uniqueNewTitles = requestedTitles.filter((title, index, values) =>
           !existingTitles.has(title.toLowerCase()) &&
           values.findIndex((value) => value.toLowerCase() === title.toLowerCase()) === index,
         );
         if (uniqueNewTitles.length > availableSlots) {
-          throw new Error(`A room can have at most ${MAX_PENDING_ITEMS} pending items.`);
+          throw new Error(`A room can have at most ${ROOM_LIMITS.pendingItems} pending items.`);
         }
         for (const title of uniqueNewTitles) {
           if (existingTitles.has(title.toLowerCase())) continue;
@@ -807,10 +704,8 @@ export class PlanningRoom {
       }
 
       case "remove_item": {
-        if (!isFacilitator) throw new Error("Only the facilitator can remove estimation items.");
-        if (room.currentRound && room.currentRound.phase !== "finalized") {
-          throw new Error("Items can only be changed between rounds.");
-        }
+        requireFacilitator(participant, "remove estimation items");
+        requireBetweenRounds(room, "Items can only be changed between rounds.");
         const item = room.items.find(({ id }) => id === event.itemId);
         if (!item || item.status !== "pending") throw new Error("That pending item was not found.");
         room.items = room.items.filter(({ id }) => id !== item.id);
@@ -818,10 +713,8 @@ export class PlanningRoom {
       }
 
       case "reorder_items": {
-        if (!isFacilitator) throw new Error("Only the facilitator can reorder estimation items.");
-        if (room.currentRound && room.currentRound.phase !== "finalized") {
-          throw new Error("Items can only be reordered between rounds.");
-        }
+        requireFacilitator(participant, "reorder estimation items");
+        requireBetweenRounds(room, "Items can only be reordered between rounds.");
         const pendingItems = room.items.filter(({ status }) => status === "pending");
         const orderedIds = Array.isArray(event.itemIds) ? event.itemIds : [];
         if (
@@ -841,10 +734,8 @@ export class PlanningRoom {
       }
 
       case "close_room": {
-        if (!isFacilitator) throw new Error("Only the facilitator can close the room.");
-        if (room.currentRound && room.currentRound.phase !== "finalized") {
-          throw new Error("Finish the current round before closing the room.");
-        }
+        requireFacilitator(participant, "close the room");
+        requireBetweenRounds(room, "Finish the current round before closing the room.");
         room.isClosed = true;
         room.isLocked = true;
         room.closedAt = Date.now();
@@ -852,10 +743,8 @@ export class PlanningRoom {
       }
 
       case "start_round": {
-        if (!isFacilitator) throw new Error("Only the facilitator can start a round.");
-        if (room.currentRound && room.currentRound.phase !== "finalized") {
-          throw new Error("Finish the current round first.");
-        }
+        requireFacilitator(participant, "start a round");
+        requireBetweenRounds(room, "Finish the current round first.");
         const selectedItem = event.itemId
           ? room.items.find(({ id, status }) => id === event.itemId && status === "pending")
           : null;
@@ -883,7 +772,7 @@ export class PlanningRoom {
       }
 
       case "update_round_title": {
-        if (!isFacilitator) throw new Error("Only the facilitator can edit the item title.");
+        requireFacilitator(participant, "edit the item title");
         const round = room.currentRound;
         if (!round || round.phase === "finalized") throw new Error("There is no active round to edit.");
         const title = cleanTitle(event.title);
@@ -897,7 +786,7 @@ export class PlanningRoom {
       }
 
       case "restart_voting": {
-        if (!isFacilitator) throw new Error("Only the facilitator can restart voting.");
+        requireFacilitator(participant, "restart voting");
         const round = room.currentRound;
         if (!round || round.phase === "finalized") throw new Error("There is no active round to restart.");
         const now = Date.now();
@@ -913,7 +802,7 @@ export class PlanningRoom {
       }
 
       case "cancel_round": {
-        if (!isFacilitator) throw new Error("Only the facilitator can cancel a round.");
+        requireFacilitator(participant, "cancel a round");
         const round = room.currentRound;
         if (!round || round.phase === "finalized") throw new Error("There is no active round to cancel.");
         room.currentRound = null;
@@ -940,15 +829,12 @@ export class PlanningRoom {
         }
         vote.confirmed = true;
         vote.votedAt = Date.now();
-        const everyoneConfirmed = round.eligibleParticipantIds.every(
-          (id) => room.participants.some((person) => person.id === id) && round.votes[id]?.confirmed,
-        );
-        if (everyoneConfirmed) round.revealAllowed = true;
+        if (everyoneConfirmed(round, room.participants)) round.revealAllowed = true;
         break;
       }
 
       case "reveal": {
-        if (!isFacilitator) throw new Error("Only the facilitator can reveal cards.");
+        requireFacilitator(participant, "reveal cards");
         const round = room.currentRound;
         if (!round || round.phase !== "voting") throw new Error("There is no voting round to reveal.");
         round.phase = "revealed";
@@ -963,7 +849,7 @@ export class PlanningRoom {
       }
 
       case "finalize": {
-        if (!isFacilitator) throw new Error("Only the facilitator can finalize an estimate.");
+        requireFacilitator(participant, "finalize an estimate");
         const round = room.currentRound;
         if (!round || round.phase !== "revealed") throw new Error("Reveal the cards first.");
         const finalValue = String(event.value ?? "").trim();
@@ -1000,7 +886,7 @@ export class PlanningRoom {
             };
           }),
         });
-        room.history = room.history.slice(0, MAX_COMPLETED_ESTIMATES);
+        room.history = room.history.slice(0, ROOM_LIMITS.completedEstimates);
         const retainedItemIds = new Set(room.history.map(({ itemId }) => itemId).filter(Boolean));
         room.items = room.items.filter(
           (item) => item.status === "pending" || retainedItemIds.has(item.id),
@@ -1021,7 +907,9 @@ export class PlanningRoom {
   roomView(room, viewer) {
     const round = room.currentRound;
     const now = Date.now();
-    room.reactions = room.reactions.filter(({ createdAt }) => now - createdAt < REACTION_LIFETIME_MS);
+    const activeReactions = room.reactions.filter(
+      ({ createdAt }) => now - createdAt < REACTION_LIFETIME_MS,
+    );
     const votesVisible = round?.phase === "revealed" || round?.phase === "finalized";
     const ownVote = round?.votes[viewer.id] ?? null;
 
@@ -1033,7 +921,7 @@ export class PlanningRoom {
       isLocked: room.isLocked,
       isClosed: room.isClosed,
       closedAt: room.closedAt ?? null,
-      reactions: room.reactions.map((reaction) => {
+      reactions: activeReactions.map((reaction) => {
         const reactor = room.participants.find(({ id }) => id === reaction.participantId);
         return {
           ...reaction,

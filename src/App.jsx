@@ -15,9 +15,16 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { DECKS, DEFAULT_DECK_ID } from "../shared/decks.js";
+import { DECKS } from "../shared/decks.js";
+import { ROOM_LIMITS } from "../shared/limits.js";
+import { JoinRoom, LoadingRoom } from "./components/EntryScreens.jsx";
+import { HomePage } from "./components/HomePage.jsx";
+import { useConfirmation } from "./hooks/useConfirmation.jsx";
+import { api } from "./lib/api.js";
+import { exportHistory } from "./lib/export.js";
+import { rememberRoom } from "./lib/recentRoom.js";
 
-const ROOM_PATH = /^\/room\/([a-f0-9]{16}|[a-z0-9]+(?:-[a-z0-9]+){3})\/?$/;
+const ROOM_PATH = /^\/room\/([a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-f0-9]{6})\/?$/;
 const SUGGESTION_ALGORITHMS = [
   {
     id: "most_votes",
@@ -58,154 +65,13 @@ const REACTION_OPTIONS = [
   { emoji: "☕", label: "Break" },
   { emoji: "✋", label: "Need to speak" },
 ];
-
-async function api(path, options = {}) {
-  const response = await fetch(path, {
-    ...options,
-    credentials: "same-origin",
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    const error = new Error(data.error || "Something went wrong.");
-    error.status = response.status;
-    throw error;
-  }
-  return data;
-}
-
 function useRoomId() {
   return window.location.pathname.match(ROOM_PATH)?.[1] ?? null;
-}
-
-function useConfirmation() {
-  const [request, setRequest] = useState(null);
-  const resolverRef = useRef(null);
-
-  const confirm = useCallback((options) => new Promise((resolve) => {
-    resolverRef.current?.(false);
-    resolverRef.current = resolve;
-    setRequest(options);
-  }), []);
-
-  const resolve = useCallback((accepted) => {
-    resolverRef.current?.(accepted);
-    resolverRef.current = null;
-    setRequest(null);
-  }, []);
-
-  useEffect(() => () => resolverRef.current?.(false), []);
-
-  return {
-    confirm,
-    confirmationDialog: request ? (
-      <ConfirmDialog {...request} onCancel={() => resolve(false)} onConfirm={() => resolve(true)} />
-    ) : null,
-  };
 }
 
 export default function App() {
   const roomId = useRoomId();
   return roomId ? <RoomPage roomId={roomId} /> : <HomePage />;
-}
-
-function HomePage() {
-  const [name, setName] = useState("");
-  const [deckId, setDeckId] = useState(DEFAULT_DECK_ID);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  async function createRoom(event) {
-    event.preventDefault();
-    if (!name.trim()) return setError("Tell the room what to call you.");
-    setLoading(true);
-    setError("");
-    try {
-      const result = await api("/api/rooms", {
-        method: "POST",
-        body: JSON.stringify({ name, deckId }),
-      });
-      window.location.assign(`/room/${result.roomId}`);
-    } catch (requestError) {
-      setError(requestError.message);
-      setLoading(false);
-    }
-  }
-
-  return (
-    <main className="home-shell">
-      <section className="hero">
-        <a className="brand" href="/">
-          <span className="brand-mark">P</span>
-          <span>Point Taken</span>
-        </a>
-        <div className="hero-copy">
-          <p className="eyebrow">Planning poker without the ceremony</p>
-          <h1>Find the estimate your team can stand behind.</h1>
-          <p className="lede">
-            Open a room, invite your team, and turn different instincts into one clear decision.
-            No accounts. No setup detour.
-          </p>
-          <div className="promise-row" aria-label="Product highlights">
-            <span>Live voting</span>
-            <span>Private cards</span>
-            <span>Seven-day rooms</span>
-          </div>
-        </div>
-      </section>
-
-      <section className="create-panel">
-        <div>
-          <p className="step-label">Create a room</p>
-          <h2>You’ll be the facilitator.</h2>
-          <p className="muted">Choose a deck now. You can invite everyone once you’re inside.</p>
-        </div>
-
-        <form onSubmit={createRoom}>
-          <label>
-            Your name
-            <input
-              autoFocus
-              maxLength={32}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="Alex"
-              value={name}
-            />
-          </label>
-
-          <fieldset>
-            <legend>Planning deck</legend>
-            <div className="deck-options">
-              {Object.values(DECKS).map((deck) => (
-                <label className={`deck-option ${deckId === deck.id ? "selected" : ""}`} key={deck.id}>
-                  <input
-                    checked={deckId === deck.id}
-                    name="deck"
-                    onChange={() => setDeckId(deck.id)}
-                    type="radio"
-                    value={deck.id}
-                  />
-                  <span>
-                    <strong>{deck.name}</strong>
-                    <small>{deck.cards.slice(0, 7).join(" · ")}</small>
-                  </span>
-                  <i aria-hidden="true" />
-                </label>
-              ))}
-            </div>
-          </fieldset>
-
-          {error && <p className="form-error">{error}</p>}
-          <button className="primary-button" disabled={loading} type="submit">
-            {loading ? "Opening the room…" : "Create planning room"}
-          </button>
-        </form>
-      </section>
-    </main>
-  );
 }
 
 function RoomPage({ roomId }) {
@@ -216,12 +82,16 @@ function RoomPage({ roomId }) {
   const socketRef = useRef(null);
 
   useEffect(() => {
+    if (room) rememberRoom(room);
+  }, [room]);
+
+  useEffect(() => {
     let cancelled = false;
     let retryTimer;
     let retryCount = 0;
 
-    function connect() {
-      setStatus(room ? "reconnecting" : "connecting");
+    function connect(isRetry = false) {
+      setStatus(isRetry ? "reconnecting" : "connecting");
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       const socket = new WebSocket(`${protocol}//${window.location.host}/api/rooms/${roomId}/socket`);
       socketRef.current = socket;
@@ -234,9 +104,13 @@ function RoomPage({ roomId }) {
         }
       };
       socket.onmessage = (event) => {
-        const message = JSON.parse(event.data);
-        if (message.type === "state") setRoom(message.room);
-        if (message.type === "error") setError(message.message);
+        try {
+          const message = JSON.parse(event.data);
+          if (message.type === "state") setRoom(message.room);
+          if (message.type === "error") setError(message.message);
+        } catch {
+          setError("The room sent an unreadable update. Reconnecting may help.");
+        }
       };
       socket.onclose = (event) => {
         if (cancelled) return;
@@ -250,7 +124,7 @@ function RoomPage({ roomId }) {
         setStatus("reconnecting");
         const delay = Math.min(15000, 750 * (2 ** retryCount));
         retryCount += 1;
-        retryTimer = window.setTimeout(connect, delay + Math.random() * 500);
+        retryTimer = window.setTimeout(() => connect(true), delay + Math.random() * 500);
       };
     }
 
@@ -298,10 +172,6 @@ function RoomPage({ roomId }) {
         method: "POST",
         body: JSON.stringify({ name }),
       });
-      setAccess("checking");
-      const state = await api(`/api/rooms/${roomId}/state`);
-      setRoom(state);
-      setAccess("joined");
       window.location.reload();
     } catch (requestError) {
       setError(requestError.message);
@@ -312,60 +182,10 @@ function RoomPage({ roomId }) {
   if (access === "join") return <JoinRoom roomId={roomId} onJoin={join} error={error} />;
   if (!room) return <LoadingRoom status={status} error={error} />;
 
-  return <Room room={room} send={send} status={status} error={error} />;
+  return <Room room={room} send={send} status={status} error={error} onError={setError} />;
 }
 
-function JoinRoom({ roomId, onJoin, error }) {
-  const [name, setName] = useState("");
-
-  function submit(event) {
-    event.preventDefault();
-    if (name.trim()) onJoin(name);
-  }
-
-  return (
-    <main className="center-shell">
-      <section className="join-card">
-        <a className="brand" href="/">
-          <span className="brand-mark">P</span>
-          <span>Point Taken</span>
-        </a>
-        <p className="eyebrow">You’ve been invited</p>
-        <h1>Join the planning room</h1>
-        <p className="muted">We’ll add a short suffix to your name so everyone stays distinct.</p>
-        <form onSubmit={submit}>
-          <label>
-            Your name
-            <input
-              autoFocus
-              maxLength={32}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="Alex"
-              value={name}
-            />
-          </label>
-          {error && <p className="form-error">{error}</p>}
-          <button className="primary-button" type="submit">Join room</button>
-        </form>
-        <small className="room-code">Room code {roomId.split("-").at(-1).slice(0, 6)}</small>
-      </section>
-    </main>
-  );
-}
-
-function LoadingRoom({ status, error }) {
-  return (
-    <main className="center-shell">
-      <div className="loading-card">
-        <div className="spinner" />
-        <h2>{status === "reconnecting" ? "Finding the room again…" : "Pulling up a chair…"}</h2>
-        {error && <p className="form-error">{error}</p>}
-      </div>
-    </main>
-  );
-}
-
-function Room({ room, send, status, error }) {
+function Room({ room, send, status, error, onError }) {
   const isFacilitator = room.viewer.role === "facilitator";
   const [copied, setCopied] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -405,9 +225,13 @@ function Room({ room, send, status, error }) {
   }, [room.participants, room.viewer.id]);
 
   async function copyLink() {
-    await navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1600);
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      onError("The invite link could not be copied. Copy it from the address bar instead.");
+    }
   }
 
   return (
@@ -480,7 +304,7 @@ function Room({ room, send, status, error }) {
 
       <div className="room-layout">
         <section className="table-area">
-          <RoundStage room={room} send={send} />
+          <RoundStage room={room} send={send} onManageItems={() => setItemsOpen(true)} />
           <CardHand room={room} send={send} />
         </section>
         <aside className="sidebar">
@@ -497,6 +321,25 @@ function ReactionLayer({ room, send }) {
   const enabled = room.settings.reactionsEnabled;
   const muted = room.settings.reactionsMuted;
   const ownHandRaised = room.raisedHands.some(({ participantId }) => participantId === room.viewer.id);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const pickerRef = useRef(null);
+  const reactions = room.settings.reactionPalette.filter((reaction) => reaction !== "✋");
+
+  useEffect(() => {
+    if (!pickerOpen) return undefined;
+    function closeOnOutsideClick(event) {
+      if (!pickerRef.current?.contains(event.target)) setPickerOpen(false);
+    }
+    function closeOnEscape(event) {
+      if (event.key === "Escape") setPickerOpen(false);
+    }
+    window.addEventListener("pointerdown", closeOnOutsideClick);
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      window.removeEventListener("pointerdown", closeOnOutsideClick);
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [pickerOpen]);
 
   if (room.isClosed) return null;
   if (!enabled && room.viewer.role !== "facilitator") return null;
@@ -525,33 +368,60 @@ function ReactionLayer({ room, send }) {
         </div>
       )}
       {enabled && (
-        <div className={`reaction-toolbar ${muted ? "muted" : ""}`}>
-          {muted ? (
-            <span>Reactions paused</span>
-          ) : (
-            room.settings.reactionPalette.map((reaction) => (
+        <div className={`reaction-toolbar ${muted ? "muted" : ""}`} ref={pickerRef}>
+          <div
+            aria-label="Choose a reaction"
+            className={`reaction-popover ${pickerOpen ? "open" : ""}`}
+            role="menu"
+          >
+            {reactions.map((reaction) => (
               <button
                 aria-label={REACTION_OPTIONS.find(({ emoji }) => emoji === reaction)?.label ?? reaction}
-                className={reaction === "✋" && ownHandRaised ? "active" : ""}
                 key={reaction}
-                onClick={() => send({
-                  type: reaction === "✋" && ownHandRaised ? "lower_hand" : "send_reaction",
-                  reaction,
-                })}
+                onClick={() => {
+                  send({ type: "send_reaction", reaction });
+                  setPickerOpen(false);
+                }}
+                tabIndex={pickerOpen ? 0 : -1}
                 title={REACTION_OPTIONS.find(({ emoji }) => emoji === reaction)?.label}
+                role="menuitem"
                 type="button"
               >
                 {reaction}
               </button>
-            ))
-          )}
+            ))}
+          </div>
+          <button
+            aria-expanded={pickerOpen}
+            aria-haspopup="menu"
+            className="reaction-trigger"
+            disabled={muted || reactions.length === 0}
+            onClick={() => setPickerOpen((open) => !open)}
+            type="button"
+          >
+            <span aria-hidden="true">🙂</span>
+            React
+          </button>
+          <button
+            className={`hand-trigger ${ownHandRaised ? "active" : ""}`}
+            disabled={muted && !ownHandRaised}
+            onClick={() => send({
+              type: ownHandRaised ? "lower_hand" : "send_reaction",
+              reaction: "✋",
+            })}
+            type="button"
+          >
+            <span aria-hidden="true">✋</span>
+            {ownHandRaised ? "Lower hand" : "Raise hand"}
+          </button>
+          {muted && <small>Reactions paused</small>}
         </div>
       )}
     </>
   );
 }
 
-function RoundStage({ room, send }) {
+function RoundStage({ room, send, onManageItems }) {
   const round = room.currentRound;
   const isFacilitator = room.viewer.role === "facilitator";
 
@@ -574,7 +444,12 @@ function RoundStage({ room, send }) {
           <span>?</span><span>3</span><span>8</span>
         </div>
         {isFacilitator ? (
-          <StartRound room={room} send={send} previousRound={round} />
+          <StartRound
+            room={room}
+            send={send}
+            previousRound={round}
+            onManageItems={onManageItems}
+          />
         ) : (
           <div className="stage-message">
             <p className="eyebrow">{round ? "Estimate saved" : "Room is ready"}</p>
@@ -593,22 +468,27 @@ function RoundStage({ room, send }) {
   return <ResultsStage room={room} send={send} />;
 }
 
-function StartRound({ room, send, previousRound }) {
-  const pendingItems = room.items.filter((item) => item.status === "pending");
+function StartRound({ room, send, previousRound, onManageItems }) {
+  const pendingItems = useMemo(
+    () => room.items.filter((item) => item.status === "pending"),
+    [room.items],
+  );
   const [itemId, setItemId] = useState(pendingItems[0]?.id ?? "");
   const [title, setTitle] = useState("");
   const [source, setSource] = useState(pendingItems.length ? "backlog" : "new");
   const selectedItem = pendingItems.find((item) => item.id === itemId);
+  const firstPendingId = pendingItems[0]?.id ?? "";
+  const selectedIsPending = pendingItems.some((item) => item.id === itemId);
 
   useEffect(() => {
-    if (pendingItems.length && !pendingItems.some((item) => item.id === itemId)) {
-      setItemId(pendingItems[0].id);
+    if (firstPendingId && !selectedIsPending) {
+      setItemId(firstPendingId);
       setSource("backlog");
-    } else if (!pendingItems.length) {
+    } else if (!firstPendingId) {
       setItemId("");
       setSource("new");
     }
-  }, [itemId, pendingItems]);
+  }, [firstPendingId, selectedIsPending]);
 
   function submit(event) {
     event.preventDefault();
@@ -649,7 +529,13 @@ function StartRound({ room, send, previousRound }) {
               ))}
             </div>
           ) : (
-            <p className="picker-empty">No pending items. Add an item on the right to begin.</p>
+            <div className="picker-empty">
+              <p>No items are waiting to be estimated.</p>
+              <button onClick={onManageItems} type="button">
+                <span aria-hidden="true">+</span>
+                Add items to the estimation queue
+              </button>
+            </div>
           )}
         </section>
 
@@ -1141,53 +1027,6 @@ function ResultMetrics({ metrics }) {
   );
 }
 
-function csvCell(value) {
-  const text = String(value ?? "");
-  return `"${text.replaceAll('"', '""')}"`;
-}
-
-function downloadText(filename, content, type) {
-  const url = URL.createObjectURL(new Blob([content], { type }));
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(url);
-}
-
-function exportHistory(room, format) {
-  const filename = room.name.toLowerCase().replaceAll(" ", "-");
-
-  if (format === "csv") {
-    const rows = [["Item", "Final estimate", "Suggested estimate", "Agreement", "Voter", "Vote", "Confirmed", "Completed"]];
-    room.history.slice().reverse().forEach((item) => {
-      item.votes.forEach((vote) => rows.push([
-        item.title,
-        item.finalValue,
-        item.suggestion?.value ?? "",
-        item.metrics ? `${item.metrics.consensusPercent}%` : "",
-        vote.participantName,
-        vote.value ?? "",
-        vote.confirmed ? "Yes" : "No",
-        new Date(item.completedAt).toISOString(),
-      ]));
-    });
-    downloadText(`${filename}-estimates.csv`, rows.map((row) => row.map(csvCell).join(",")).join("\n"), "text/csv");
-    return;
-  }
-
-  const lines = [`# ${room.name} estimates`, ""];
-  room.history.slice().reverse().forEach((item) => {
-    lines.push(`## ${item.title}`, "", `- Final estimate: **${item.finalValue}**`);
-    lines.push(`- Suggested estimate: ${item.suggestion?.value ?? "None"}`);
-    if (item.metrics) lines.push(`- Agreement: ${item.metrics.consensusPercent}%`);
-    lines.push("", "| Participant | Vote |", "| --- | --- |");
-    item.votes.forEach((vote) => lines.push(`| ${vote.participantName} | ${vote.value ?? "No vote"} |`));
-    lines.push("");
-  });
-  downloadText(`${filename}-estimates.md`, lines.join("\n"), "text/markdown");
-}
-
 function History({ room }) {
   const { history } = room;
   const [selected, setSelected] = useState(null);
@@ -1324,7 +1163,7 @@ function RoomSettings({ room, send, onClose, onManageItems }) {
   function addCard(event) {
     event.preventDefault();
     const value = newCard.trim();
-    if (!value || cards.includes(value) || cards.length >= 16) return;
+    if (!value || cards.includes(value) || cards.length >= ROOM_LIMITS.cards) return;
     setCards([...cards, value]);
     setNewCard("");
   }
@@ -1504,7 +1343,7 @@ function RoomSettings({ room, send, onClose, onManageItems }) {
             {reactionsEnabled && (
               <>
                 <div className="reaction-palette-editor">
-                  {REACTION_OPTIONS.map((option) => {
+                  {REACTION_OPTIONS.filter(({ emoji }) => emoji !== "✋").map((option) => {
                     const selected = reactionPalette.includes(option.emoji);
                     return (
                       <button
@@ -1591,73 +1430,36 @@ function RoomSettings({ room, send, onClose, onManageItems }) {
   );
 }
 
-function ConfirmDialog({
-  title,
-  message,
-  confirmLabel = "Continue",
-  cancelLabel = "Keep editing",
-  tone = "default",
-  onCancel,
-  onConfirm,
-}) {
-  const confirmRef = useRef(null);
-
-  useEffect(() => {
-    confirmRef.current?.focus();
-    function handleKeyDown(event) {
-      if (event.key === "Escape") onCancel();
-    }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onCancel]);
-
-  return (
-    <div className="confirm-backdrop" onMouseDown={onCancel} role="presentation">
-      <section
-        aria-describedby="confirmation-message"
-        aria-labelledby="confirmation-title"
-        aria-modal="true"
-        className={`confirm-dialog ${tone === "danger" ? "danger" : ""}`}
-        onMouseDown={(event) => event.stopPropagation()}
-        role="alertdialog"
-      >
-        <span className="confirm-icon" aria-hidden="true">
-          {tone === "danger" ? "!" : "?"}
-        </span>
-        <h2 id="confirmation-title">{title}</h2>
-        <p id="confirmation-message">{message}</p>
-        <div>
-          <button className="secondary-button" onClick={onCancel} type="button">
-            {cancelLabel}
-          </button>
-          <button
-            className={tone === "danger" ? "danger-confirm-button" : "primary-button"}
-            onClick={onConfirm}
-            ref={confirmRef}
-            type="button"
-          >
-            {confirmLabel}
-          </button>
-        </div>
-      </section>
-    </div>
-  );
-}
-
 function ItemManager({ room, send, onClose }) {
   const [itemTitles, setItemTitles] = useState("");
-  const pendingItems = room.items.filter((item) => item.status === "pending");
+  const pendingItems = useMemo(
+    () => room.items.filter((item) => item.status === "pending"),
+    [room.items],
+  );
   const [orderedItems, setOrderedItems] = useState(pendingItems);
   const estimatedItems = room.items.filter((item) => item.status === "estimated");
   const activeRound = room.currentRound && room.currentRound.phase !== "finalized";
+  const pendingOrderRef = useRef(null);
+  const pendingSignature = pendingItems.map(({ id, title }) => `${id}:${title}`).join("|");
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
   useEffect(() => {
-    setOrderedItems(pendingItems);
-  }, [room.items]);
+    setOrderedItems((current) => {
+      const currentSignature = current.map(({ id, title }) => `${id}:${title}`).join("|");
+      if (currentSignature === pendingSignature) {
+        pendingOrderRef.current = null;
+        return current;
+      }
+      if (pendingOrderRef.current && pendingOrderRef.current !== pendingSignature) {
+        return current;
+      }
+      pendingOrderRef.current = null;
+      return pendingItems;
+    });
+  }, [pendingItems, pendingSignature]);
 
   function addItems(event) {
     event.preventDefault();
@@ -1676,6 +1478,7 @@ function ItemManager({ room, send, onClose }) {
         items.findIndex((item) => item.id === active.id),
         items.findIndex((item) => item.id === over.id),
       );
+      pendingOrderRef.current = reordered.map(({ id, title }) => `${id}:${title}`).join("|");
       send({ type: "reorder_items", itemIds: reordered.map((item) => item.id) });
       return reordered;
     });

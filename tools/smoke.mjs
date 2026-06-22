@@ -97,11 +97,11 @@ const created = await request("/api/rooms", {
   body: JSON.stringify({ name: "Alex", deckId: "fibonacci" }),
 });
 assert.match(created.roomId, /^[a-z]+-[a-z]+-[a-z]+-[a-f0-9]{6}$/);
-const joined = await request(`/api/rooms/${created.roomId}/join`, {
+await request(`/api/rooms/${created.roomId}/join`, {
   method: "POST",
   body: JSON.stringify({ name: "Alex" }),
 }, participantSession);
-const observerJoined = await request(`/api/rooms/${created.roomId}/join`, {
+await request(`/api/rooms/${created.roomId}/join`, {
   method: "POST",
   body: JSON.stringify({ name: "Sam" }),
 }, observerSession);
@@ -123,7 +123,7 @@ facilitator.send({
 });
 const observerConfigured = await observer.waitFor((room) => room.viewer.role === "observer");
 assert.equal(observerConfigured.participants.find((person) => person.id === observerPerson.id).role, "observer");
-assert.deepEqual(observerConfigured.settings.reactionPalette, ["👍", "🤔", "👀", "🎉", "☕", "✋"]);
+assert.deepEqual(observerConfigured.settings.reactionPalette, ["👍", "🤔", "👀", "🎉", "☕"]);
 
 observer.send({ type: "send_reaction", reaction: "👍" });
 const reacted = await facilitator.waitFor(
