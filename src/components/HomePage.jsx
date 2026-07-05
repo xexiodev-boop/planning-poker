@@ -49,7 +49,7 @@ export function HomePage() {
               {recentRoom.role === "facilitator"
                 ? <Trans>You created this room.</Trans>
                 : <Trans>You joined this room.</Trans>}{" "}
-              <Trans>Open it again or press <kbd>{bookmarkShortcut}</kbd> there to bookmark it.</Trans>
+              <Trans>Open it again, then press <kbd>{bookmarkShortcut}</kbd> inside the room to bookmark it.</Trans>
             </p>
           </div>
           <a href={recentRoom.path}><Trans>Open room</Trans></a>

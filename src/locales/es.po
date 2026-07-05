@@ -6,6 +6,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
 "Language: es\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
 
 #. placeholder {0}: estimatedItems.length
 #: src/components/panels/ItemManager.jsx:171
@@ -735,7 +741,9 @@ msgstr "Fijado · {selected}"
 msgid "Login with SSO\n"
 "Add audit log export\n"
 "Improve empty states"
-msgstr "Inicio de sesión con SSO\nExportar registro de auditoría\nMejorar estados vacíos"
+msgstr "Inicio de sesión con SSO\n"
+"Exportar registro de auditoría\n"
+"Mejorar estados vacíos"
 
 #: src/components/room/ReactionLayer.jsx:129
 msgid "Lower hand"
@@ -906,8 +914,12 @@ msgid "Open a room, invite your team, and turn different instincts into one clea
 msgstr "Abre una sala, invita a tu equipo y convierte instintos distintos en una decisión clara. Sin cuentas. Sin rodeos de configuración."
 
 #: src/components/HomePage.jsx:52
-msgid "Open it again or press <0>{bookmarkShortcut}</0> there to bookmark it."
-msgstr "Ábrela de nuevo o pulsa <0>{bookmarkShortcut}</0> allí para guardarla en marcadores."
+#~ msgid "Open it again or press <0>{bookmarkShortcut}</0> there to bookmark it."
+#~ msgstr "Ábrela de nuevo o pulsa <0>{bookmarkShortcut}</0> allí para guardarla en marcadores."
+
+#: src/components/HomePage.jsx:52
+msgid "Open it again, then press <0>{bookmarkShortcut}</0> inside the room to bookmark it."
+msgstr "Ábrela de nuevo y, ya dentro de la sala, pulsa <0>{bookmarkShortcut}</0> para guardarla en marcadores."
 
 #: src/components/panels/RoomSettings.jsx:136
 #: src/components/room/FacilitatorGuide.jsx:10

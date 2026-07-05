@@ -6,6 +6,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
 
 #. placeholder {0}: estimatedItems.length
 #: src/components/panels/ItemManager.jsx:171
@@ -908,8 +914,12 @@ msgid "Open a room, invite your team, and turn different instincts into one clea
 msgstr "Open a room, invite your team, and turn different instincts into one clear decision. No accounts. No setup detour."
 
 #: src/components/HomePage.jsx:52
-msgid "Open it again or press <0>{bookmarkShortcut}</0> there to bookmark it."
-msgstr "Open it again or press <0>{bookmarkShortcut}</0> there to bookmark it."
+#~ msgid "Open it again or press <0>{bookmarkShortcut}</0> there to bookmark it."
+#~ msgstr "Open it again or press <0>{bookmarkShortcut}</0> there to bookmark it."
+
+#: src/components/HomePage.jsx:52
+msgid "Open it again, then press <0>{bookmarkShortcut}</0> inside the room to bookmark it."
+msgstr "Open it again, then press <0>{bookmarkShortcut}</0> inside the room to bookmark it."
 
 #: src/components/panels/RoomSettings.jsx:136
 #: src/components/room/FacilitatorGuide.jsx:10
