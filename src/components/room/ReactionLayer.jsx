@@ -1,7 +1,10 @@
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useRef, useState } from "react";
 import { REACTION_OPTIONS } from "../../../shared/reactions.js";
+import { reactionLabel } from "../../lib/labels.js";
 
 export function ReactionLayer({ room, send }) {
+  const { t } = useLingui();
   const enabled = room.settings.reactionsEnabled;
   const muted = room.settings.reactionsMuted;
   const ownHandRaised = room.raisedHands.some(({ participantId }) => participantId === room.viewer.id);
@@ -78,7 +81,7 @@ export function ReactionLayer({ room, send }) {
       {enabled && (
         <div className={`reaction-toolbar ${muted ? "muted" : ""}`} ref={pickerRef}>
           <div
-            aria-label="Choose a reaction"
+            aria-label={t`Choose a reaction`}
             className={`reaction-popover ${pickerOpen ? "open" : ""}`}
             onKeyDown={moveMenuFocus}
             ref={menuRef}
@@ -86,14 +89,14 @@ export function ReactionLayer({ room, send }) {
           >
             {reactions.map((reaction) => (
               <button
-                aria-label={REACTION_OPTIONS.find(({ emoji }) => emoji === reaction)?.label ?? reaction}
+                aria-label={reactionLabel(reaction, REACTION_OPTIONS.find(({ emoji }) => emoji === reaction)?.label ?? reaction)}
                 key={reaction}
                 onClick={() => {
                   send({ type: "send_reaction", reaction });
                   setPickerOpen(false);
                 }}
                 tabIndex={pickerOpen ? 0 : -1}
-                title={REACTION_OPTIONS.find(({ emoji }) => emoji === reaction)?.label}
+                title={reactionLabel(reaction, REACTION_OPTIONS.find(({ emoji }) => emoji === reaction)?.label)}
                 role="menuitem"
                 type="button"
               >
@@ -111,7 +114,7 @@ export function ReactionLayer({ room, send }) {
             type="button"
           >
             <span aria-hidden="true">🙂</span>
-            React
+            <Trans>React</Trans>
           </button>
           <button
             className={`hand-trigger ${ownHandRaised ? "active" : ""}`}
@@ -123,9 +126,9 @@ export function ReactionLayer({ room, send }) {
             type="button"
           >
             <span aria-hidden="true">✋</span>
-            {ownHandRaised ? "Lower hand" : "Raise hand"}
+            {ownHandRaised ? <Trans>Lower hand</Trans> : <Trans>Raise hand</Trans>}
           </button>
-          {muted && <small>Reactions paused</small>}
+          {muted && <small><Trans>Reactions paused</Trans></small>}
         </div>
       )}
     </>

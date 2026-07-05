@@ -1,3 +1,5 @@
+import { t } from "@lingui/core/macro";
+
 // Byte-order mark: leads CSV output so Excel opens it as UTF-8 rather than ANSI,
 // keeping emoji, fractions, and accented names intact. Built from a char code so
 // the source file stays pure ASCII.
@@ -28,7 +30,7 @@ export function exportHistory(room, format) {
   const filename = room.name.toLowerCase().replaceAll(" ", "-");
 
   if (format === "csv") {
-    const rows = [["Item", "Final estimate", "Suggested estimate", "Agreement", "Voter", "Vote", "Confirmed", "Completed"]];
+    const rows = [[t`Item`, t`Final estimate`, t`Suggested estimate`, t`Agreement`, t`Voter`, t`Vote`, t`Confirmed`, t`Completed`]];
     room.history.slice().reverse().forEach((item) => {
       item.votes.forEach((vote) => rows.push([
         item.title,
@@ -37,7 +39,7 @@ export function exportHistory(room, format) {
         item.metrics ? `${item.metrics.consensusPercent}%` : "",
         vote.participantName,
         vote.value ?? "",
-        vote.confirmed ? "Yes" : "No",
+        vote.confirmed ? t`Yes` : t`No`,
         new Date(item.completedAt).toISOString(),
       ]));
     });
@@ -49,13 +51,14 @@ export function exportHistory(room, format) {
     return;
   }
 
-  const lines = [`# ${room.name} estimates`, ""];
+  const roomName = room.name;
+  const lines = [`# ${t`${roomName} estimates`}`, ""];
   room.history.slice().reverse().forEach((item) => {
-    lines.push(`## ${item.title}`, "", `- Final estimate: **${item.finalValue}**`);
-    lines.push(`- Suggested estimate: ${item.suggestion?.value ?? "None"}`);
-    if (item.metrics) lines.push(`- Agreement: ${item.metrics.consensusPercent}%`);
-    lines.push("", "| Participant | Vote |", "| --- | --- |");
-    item.votes.forEach((vote) => lines.push(`| ${mdCell(vote.participantName)} | ${mdCell(vote.value ?? "No vote")} |`));
+    lines.push(`## ${item.title}`, "", `- ${t`Final estimate`}: **${item.finalValue}**`);
+    lines.push(`- ${t`Suggested estimate`}: ${item.suggestion?.value ?? t`None`}`);
+    if (item.metrics) lines.push(`- ${t`Agreement`}: ${item.metrics.consensusPercent}%`);
+    lines.push("", `| ${t`Participant`} | ${t`Vote`} |`, "| --- | --- |");
+    item.votes.forEach((vote) => lines.push(`| ${mdCell(vote.participantName)} | ${mdCell(vote.value ?? t`No vote`)} |`));
     lines.push("");
   });
   downloadText(`${filename}-estimates.md`, lines.join("\n"), "text/markdown");

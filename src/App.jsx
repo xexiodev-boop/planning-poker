@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ROOM_ID_PATTERN } from "../shared/roomId.js";
 import { JoinRoom, LoadingRoom } from "./components/EntryScreens.jsx";
@@ -6,6 +7,7 @@ import { PrivacyPage } from "./components/PrivacyPage.jsx";
 import { Room } from "./components/room/Room.jsx";
 import { api } from "./lib/api.js";
 import { forgetRoom, rememberRoom } from "./lib/recentRoom.js";
+import { localizeAnnouncement, localizeServerMessage } from "./lib/serverMessages.js";
 
 const ROOM_PATH = new RegExp(`^/room/(${ROOM_ID_PATTERN})/?$`);
 function useRoomId() {
@@ -67,14 +69,14 @@ function RoomPage({ roomId }) {
                 : message.room,
             );
           }
-          if (message.type === "error") setError(message.message);
-          if (message.type === "announcement") setNotice(message.message);
+          if (message.type === "error") setError(localizeServerMessage(message.message));
+          if (message.type === "announcement") setNotice(localizeAnnouncement(message));
           if (message.type === "room_deleted") {
             forgetRoom(roomId);
             window.location.assign("/");
           }
         } catch {
-          setError("The room sent an unreadable update. Reconnecting may help.");
+          setError(t`The room sent an unreadable update. Reconnecting may help.`);
         }
       };
       socket.onclose = (event) => {
@@ -86,7 +88,7 @@ function RoomPage({ roomId }) {
           return;
         }
         if (event.code === 4001) {
-          setError("You were removed from this room.");
+          setError(t`You were removed from this room.`);
           setAccess("join");
           setRoom(null);
           setStatus("join");
@@ -139,7 +141,7 @@ function RoomPage({ roomId }) {
           method: "POST",
           body: JSON.stringify({ code }),
         });
-        if (!cancelled) setNotice("Facilitator access recovered.");
+        if (!cancelled) setNotice(t`Facilitator access recovered.`);
       } catch (requestError) {
         if (!cancelled) setError(requestError.message);
       } finally {
@@ -180,7 +182,7 @@ function RoomPage({ roomId }) {
 
   const send = useCallback((event) => {
     if (socketRef.current?.readyState !== WebSocket.OPEN) {
-      setError("The room is reconnecting. Try that again in a moment.");
+      setError(t`The room is reconnecting. Try that again in a moment.`);
       return;
     }
     socketRef.current.send(JSON.stringify(event));

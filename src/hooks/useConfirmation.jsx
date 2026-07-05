@@ -1,14 +1,16 @@
+import { useLingui } from "@lingui/react/macro";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 function ConfirmDialog({
   title,
   message,
-  confirmLabel = "Continue",
-  cancelLabel = "Keep editing",
+  confirmLabel,
+  cancelLabel,
   tone = "default",
   onCancel,
   onConfirm,
 }) {
+  const { t } = useLingui();
   const confirmRef = useRef(null);
 
   useEffect(() => {
@@ -34,14 +36,14 @@ function ConfirmDialog({
         <h2 id="confirmation-title">{title}</h2>
         <p id="confirmation-message">{message}</p>
         <div>
-          <button className="secondary-button" onClick={onCancel} type="button">{cancelLabel}</button>
+          <button className="secondary-button" onClick={onCancel} type="button">{cancelLabel ?? t`Keep editing`}</button>
           <button
             className={tone === "danger" ? "danger-confirm-button" : "primary-button"}
             onClick={onConfirm}
             ref={confirmRef}
             type="button"
           >
-            {confirmLabel}
+            {confirmLabel ?? t`Continue`}
           </button>
         </div>
       </section>

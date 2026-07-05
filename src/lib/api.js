@@ -1,3 +1,6 @@
+import { t } from "@lingui/core/macro";
+import { localizeServerMessage } from "./serverMessages.js";
+
 export async function api(path, options = {}) {
   const response = await fetch(path, {
     ...options,
@@ -9,7 +12,7 @@ export async function api(path, options = {}) {
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const error = new Error(data.error || "Something went wrong.");
+    const error = new Error(data.error ? localizeServerMessage(data.error) : t`Something went wrong.`);
     error.status = response.status;
     throw error;
   }

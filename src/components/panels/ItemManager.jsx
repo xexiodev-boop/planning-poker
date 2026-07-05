@@ -1,3 +1,4 @@
+import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, rectSortingStrategy, SortableContext, sortableKeyboardCoordinates, useSortable } from "@dnd-kit/sortable";
@@ -5,6 +6,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { useModal } from "../../hooks/useModal.js";
 
 export function ItemManager({ room, send, error, onClose }) {
+  const { t } = useLingui();
   const [itemTitles, setItemTitles] = useState("");
   const pendingItems = useMemo(
     () => room.items.filter((item) => item.status === "pending"),
@@ -82,41 +84,47 @@ export function ItemManager({ room, send, error, onClose }) {
       >
         <header className="items-screen-header">
           <div>
-            <p className="eyebrow">Estimation queue</p>
-            <h1 id="item-manager-title">Items to estimate</h1>
-            <p>Prepare the session before voting starts. Add one item per line.</p>
+            <p className="eyebrow"><Trans>Estimation queue</Trans></p>
+            <h1 id="item-manager-title"><Trans>Items to estimate</Trans></h1>
+            <p><Trans>Prepare the session before voting starts. Add one item per line.</Trans></p>
           </div>
           <div className="workspace-header-actions">
             <span className="items-room-name">{room.name}</span>
-            <button className="workspace-close" onClick={onClose} type="button" aria-label="Close items">×</button>
+            <button className="workspace-close" onClick={onClose} type="button" aria-label={t`Close items`}>×</button>
           </div>
         </header>
 
         {activeRound && (
           <div className="items-active-notice">
-            The item list is read-only while a round is active.
+            <Trans>The item list is read-only while a round is active.</Trans>
           </div>
         )}
 
         <div className="items-workspace">
           <section className="items-composer">
           <span className="item-step">01</span>
-          <h2>Add items</h2>
-          <p>Paste a list from your backlog or write the work down here.</p>
+          <h2><Trans>Add items</Trans></h2>
+          <p><Trans>Paste a list from your backlog or write the work down here.</Trans></p>
           <form onSubmit={addItems}>
             <textarea
               autoFocus
               disabled={activeRound}
               maxLength={16000}
               onChange={(event) => setItemTitles(event.target.value)}
-              placeholder={"Login with SSO\nAdd audit log export\nImprove empty states"}
+              placeholder={t`Login with SSO\nAdd audit log export\nImprove empty states`}
               rows={10}
               value={itemTitles}
             />
             <div>
-              <small>{itemTitles.split(/\r?\n/).filter((line) => line.trim()).length} items ready</small>
+              <small>
+                <Plural
+                  value={itemTitles.split(/\r?\n/).filter((line) => line.trim()).length}
+                  one="# item ready"
+                  other="# items ready"
+                />
+              </small>
               <button className="primary-button" disabled={activeRound || !itemTitles.trim()} type="submit">
-                Add to session
+                <Trans>Add to session</Trans>
               </button>
             </div>
           </form>
@@ -126,9 +134,9 @@ export function ItemManager({ room, send, error, onClose }) {
           <div className="items-queue-heading">
             <div>
               <span className="item-step">02</span>
-              <h2>Session queue</h2>
+              <h2><Trans>Session queue</Trans></h2>
             </div>
-            <span>{pendingItems.length} pending</span>
+            <span><Plural value={pendingItems.length} one="# pending" other="# pending" /></span>
           </div>
           {orderedItems.length ? (
             <DndContext
@@ -153,13 +161,19 @@ export function ItemManager({ room, send, error, onClose }) {
             </DndContext>
           ) : (
             <div className="items-queue-empty">
-              <strong>Your queue is empty</strong>
-              <p>Add a few items and they’ll appear here in voting order.</p>
+              <strong><Trans>Your queue is empty</Trans></strong>
+              <p><Trans>Add a few items and they’ll appear here in voting order.</Trans></p>
             </div>
           )}
           {estimatedItems.length > 0 && (
             <div className="estimated-summary">
-              <strong>{estimatedItems.length} already estimated</strong>
+              <strong>
+                <Plural
+                  value={estimatedItems.length}
+                  one="# already estimated"
+                  other="# already estimated"
+                />
+              </strong>
               <span>{estimatedItems.map((item) => item.title).join(" · ")}</span>
             </div>
           )}
@@ -171,6 +185,7 @@ export function ItemManager({ room, send, error, onClose }) {
 }
 
 function SortableQueueItem({ activeRound, index, item, onRemove, onUpdate }) {
+  const { t } = useLingui();
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(item.title);
   const {
@@ -206,7 +221,7 @@ function SortableQueueItem({ activeRound, index, item, onRemove, onUpdate }) {
         type="button"
         {...attributes}
         {...listeners}
-        aria-label={`Drag to reorder ${item.title}`}
+        aria-label={t`Drag to reorder ${item.title}`}
       >
         <span aria-hidden="true">⠿</span>
       </button>
@@ -219,7 +234,7 @@ function SortableQueueItem({ activeRound, index, item, onRemove, onUpdate }) {
             onChange={(event) => setTitle(event.target.value)}
             value={title}
           />
-          <button type="submit">Save</button>
+          <button type="submit"><Trans>Save</Trans></button>
           <button
             onClick={() => {
               setTitle(item.title);
@@ -227,7 +242,7 @@ function SortableQueueItem({ activeRound, index, item, onRemove, onUpdate }) {
             }}
             type="button"
           >
-            Cancel
+            <Trans>Cancel</Trans>
           </button>
         </form>
       ) : (
@@ -239,16 +254,16 @@ function SortableQueueItem({ activeRound, index, item, onRemove, onUpdate }) {
               disabled={activeRound}
               onClick={() => setEditing(true)}
               type="button"
-              aria-label={`Edit ${item.title}`}
+              aria-label={t`Edit ${item.title}`}
             >
-              Edit
+              <Trans>Edit</Trans>
             </button>
             <button
               className="queue-remove"
               disabled={activeRound}
               onClick={onRemove}
               type="button"
-              aria-label={`Remove ${item.title}`}
+              aria-label={t`Remove ${item.title}`}
             >
               ×
             </button>

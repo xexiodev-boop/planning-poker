@@ -1,3 +1,4 @@
+import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { useState } from "react";
 import { closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, rectSortingStrategy, SortableContext, sortableKeyboardCoordinates, useSortable } from "@dnd-kit/sortable";
@@ -9,8 +10,10 @@ import { HAND_REACTION, REACTION_OPTIONS } from "../../../shared/reactions.js";
 import { REVEAL_DELAY_OPTIONS } from "../../../shared/reveal.js";
 import { useConfirmation } from "../../hooks/useConfirmation.jsx";
 import { useModal } from "../../hooks/useModal.js";
+import { algorithmDescription, algorithmName, reactionLabel, revealDelayLabel } from "../../lib/labels.js";
 
 export function RoomSettings({ room, send, onClose, onManageItems }) {
+  const { t } = useLingui();
   const [cards, setCards] = useState(room.deck.cards);
   const [newCard, setNewCard] = useState("");
   const [algorithm, setAlgorithm] = useState(room.settings.suggestionAlgorithm);
@@ -67,9 +70,9 @@ export function RoomSettings({ room, send, onClose, onManageItems }) {
 
   async function closeRoom() {
     const accepted = await confirm({
-      title: "Close this room?",
-      message: "Existing participants can review completed estimates, but nobody will be able to vote or join.",
-      confirmLabel: "Close room",
+      title: t`Close this room?`,
+      message: t`Existing participants can review completed estimates, but nobody will be able to vote or join.`,
+      confirmLabel: t`Close room`,
       tone: "danger",
     });
     if (!accepted) return;
@@ -79,14 +82,16 @@ export function RoomSettings({ room, send, onClose, onManageItems }) {
 
   async function deleteRoom() {
     const accepted = await confirm({
-      title: "Delete this room permanently?",
-      message: "All items, votes, participants, and completed estimates will be erased immediately. This cannot be undone.",
-      confirmLabel: "Delete room",
+      title: t`Delete this room permanently?`,
+      message: t`All items, votes, participants, and completed estimates will be erased immediately. This cannot be undone.`,
+      confirmLabel: t`Delete room`,
       tone: "danger",
     });
     if (!accepted) return;
     send({ type: "delete_room" });
   }
+
+  const pendingCount = room.items.filter((item) => item.status === "pending").length;
 
   return (
     <div className="modal-backdrop" onMouseDown={onClose}>
@@ -100,36 +105,36 @@ export function RoomSettings({ room, send, onClose, onManageItems }) {
       >
         <header>
           <div>
-            <p className="eyebrow">Facilitator controls</p>
-            <h2 id="room-settings-title">Room settings</h2>
+            <p className="eyebrow"><Trans>Facilitator controls</Trans></p>
+            <h2 id="room-settings-title"><Trans>Room settings</Trans></h2>
           </div>
-          <button className="icon-button" onClick={onClose} type="button" aria-label="Close settings">×</button>
+          <button className="icon-button" onClick={onClose} type="button" aria-label={t`Close settings`}>×</button>
         </header>
 
         <div className="settings-content">
           {room.isClosed ? (
             <div className="settings-notice">
-              This room is closed and read-only. Settings can’t be changed, but you can still delete it below.
+              <Trans>This room is closed and read-only. Settings can’t be changed, but you can still delete it below.</Trans>
             </div>
           ) : activeRound ? (
             <div className="settings-notice">
-              Finish the current round before changing its deck or suggestion rules.
+              <Trans>Finish the current round before changing its deck or suggestion rules.</Trans>
             </div>
           ) : null}
           <section className="settings-group">
             <div className="settings-title">
               <div>
-                <h3>Items to estimate</h3>
-                <p>Prepare and maintain the work this room will estimate.</p>
+                <h3><Trans>Items to estimate</Trans></h3>
+                <p><Trans>Prepare and maintain the work this room will estimate.</Trans></p>
               </div>
               <span className="pending-count">
-                {room.items.filter((item) => item.status === "pending").length} pending
+                <Plural value={pendingCount} one="# pending" other="# pending" />
               </span>
             </div>
             <button className="manage-items-button" onClick={onManageItems} type="button">
               <span>
-                <strong>Open item manager</strong>
-                <small>Add, review, and remove estimation items</small>
+                <strong><Trans>Open item manager</Trans></strong>
+                <small><Trans>Add, review, and remove estimation items</Trans></small>
               </span>
               <i aria-hidden="true">→</i>
             </button>
@@ -138,11 +143,11 @@ export function RoomSettings({ room, send, onClose, onManageItems }) {
           <section className="settings-group">
             <div className="settings-title">
               <div>
-                <h3>Planning deck</h3>
-                <p>Add, remove, or reorder the cards used in this room.</p>
+                <h3><Trans>Planning deck</Trans></h3>
+                <p><Trans>Add, remove, or reorder the cards used in this room.</Trans></p>
               </div>
               <button className="text-button" disabled={editingDisabled} onClick={resetDeck} type="button">
-                Reset deck
+                <Trans>Reset deck</Trans>
               </button>
             </div>
             <DndContext
@@ -169,18 +174,18 @@ export function RoomSettings({ room, send, onClose, onManageItems }) {
                 disabled={editingDisabled}
                 maxLength={12}
                 onChange={(event) => setNewCard(event.target.value)}
-                placeholder="New card"
+                placeholder={t`New card`}
                 value={newCard}
               />
-              <button className="secondary-button" disabled={editingDisabled} type="submit">Add card</button>
+              <button className="secondary-button" disabled={editingDisabled} type="submit"><Trans>Add card</Trans></button>
             </form>
           </section>
 
           <section className="settings-group">
             <div className="settings-title">
               <div>
-                <h3>Suggested estimate</h3>
-                <p>Choose how the app turns the revealed votes into a starting point.</p>
+                <h3><Trans>Suggested estimate</Trans></h3>
+                <p><Trans>Choose how the app turns the revealed votes into a starting point.</Trans></p>
               </div>
             </div>
             <div className="algorithm-options">
@@ -194,8 +199,8 @@ export function RoomSettings({ room, send, onClose, onManageItems }) {
                     type="radio"
                   />
                   <span>
-                    <strong>{option.name}</strong>
-                    <small>{option.description}</small>
+                    <strong>{algorithmName(option)}</strong>
+                    <small>{algorithmDescription(option)}</small>
                   </span>
                 </label>
               ))}
@@ -204,20 +209,20 @@ export function RoomSettings({ room, send, onClose, onManageItems }) {
 
           <section className="settings-group settings-row">
             <div>
-              <h3>Reveal reminder</h3>
-              <p>Signal when it may be time to turn the cards over.</p>
+              <h3><Trans>Reveal reminder</Trans></h3>
+              <p><Trans>Signal when it may be time to turn the cards over.</Trans></p>
             </div>
             <select disabled={editingDisabled} onChange={(event) => setTimer(event.target.value)} value={timer}>
-              {REVEAL_DELAY_OPTIONS.map(({ seconds, label }) => (
-                <option key={seconds} value={seconds}>{label}</option>
+              {REVEAL_DELAY_OPTIONS.map((option) => (
+                <option key={option.seconds} value={option.seconds}>{revealDelayLabel(option)}</option>
               ))}
             </select>
           </section>
 
           <section className="settings-group settings-row">
             <div>
-              <h3>Auto-reveal</h3>
-              <p>Turn the cards over automatically once everyone has voted.</p>
+              <h3><Trans>Auto-reveal</Trans></h3>
+              <p><Trans>Turn the cards over automatically once everyone has voted.</Trans></p>
             </div>
             <label className="switch-control">
               <input
@@ -233,8 +238,8 @@ export function RoomSettings({ room, send, onClose, onManageItems }) {
           <section className="settings-group">
             <div className="settings-title">
               <div>
-                <h3>Team reactions</h3>
-                <p>Let people signal agreement, uncertainty, breaks, or a wish to speak.</p>
+                <h3><Trans>Team reactions</Trans></h3>
+                <p><Trans>Let people signal agreement, uncertainty, breaks, or a wish to speak.</Trans></p>
               </div>
               <label className="switch-control">
                 <input
@@ -264,11 +269,11 @@ export function RoomSettings({ room, send, onClose, onManageItems }) {
                               : [...reactionPalette, option.emoji],
                           );
                         }}
-                        title={option.label}
+                        title={reactionLabel(option.emoji, option.label)}
                         type="button"
                       >
                         <strong>{option.emoji}</strong>
-                        <small>{option.label}</small>
+                        <small>{reactionLabel(option.emoji, option.label)}</small>
                       </button>
                     );
                   })}
@@ -283,7 +288,7 @@ export function RoomSettings({ room, send, onClose, onManageItems }) {
                     })}
                     type="button"
                   >
-                    {room.settings.reactionsMuted ? "Resume reactions" : "Pause reactions"}
+                    {room.settings.reactionsMuted ? <Trans>Resume reactions</Trans> : <Trans>Pause reactions</Trans>}
                   </button>
                   <button
                     className="secondary-button"
@@ -291,7 +296,7 @@ export function RoomSettings({ room, send, onClose, onManageItems }) {
                     onClick={() => send({ type: "clear_reactions" })}
                     type="button"
                   >
-                    Clear reactions
+                    <Trans>Clear reactions</Trans>
                   </button>
                 </div>
               </>
@@ -300,11 +305,11 @@ export function RoomSettings({ room, send, onClose, onManageItems }) {
 
           <section className="settings-group access-settings">
             <div>
-              <h3>Room access</h3>
+              <h3><Trans>Room access</Trans></h3>
               <p>
                 {room.isLocked
-                  ? "New participants cannot join. Existing participants can reconnect."
-                  : "Anyone with the link can currently join."}
+                  ? <Trans>New participants cannot join. Existing participants can reconnect.</Trans>
+                  : <Trans>Anyone with the link can currently join.</Trans>}
               </p>
             </div>
             <button
@@ -313,36 +318,36 @@ export function RoomSettings({ room, send, onClose, onManageItems }) {
               onClick={() => send({ type: "set_room_lock", locked: !room.isLocked })}
               type="button"
             >
-              {room.isLocked ? "Unlock room" : "Lock room"}
+              {room.isLocked ? <Trans>Unlock room</Trans> : <Trans>Lock room</Trans>}
             </button>
           </section>
 
           <section className="danger-zone">
             <div className="danger-action">
               <div>
-                <h3>Close room</h3>
-                <p>Make this session read-only until it expires.</p>
+                <h3><Trans>Close room</Trans></h3>
+                <p><Trans>Make this session read-only until it expires.</Trans></p>
               </div>
               <button className="danger-button" disabled={editingDisabled} onClick={closeRoom} type="button">
-                Close room
+                <Trans>Close room</Trans>
               </button>
             </div>
             <div className="danger-action delete">
               <div>
-                <h3>Delete room</h3>
-                <p>Immediately erase the room and all of its data.</p>
+                <h3><Trans>Delete room</Trans></h3>
+                <p><Trans>Immediately erase the room and all of its data.</Trans></p>
               </div>
               <button className="danger-button solid" onClick={deleteRoom} type="button">
-                Delete room
+                <Trans>Delete room</Trans>
               </button>
             </div>
           </section>
         </div>
 
         <footer>
-          <button className="secondary-button" onClick={onClose} type="button">Cancel</button>
+          <button className="secondary-button" onClick={onClose} type="button"><Trans>Cancel</Trans></button>
           <button className="primary-button" disabled={editingDisabled || cards.length < 2} onClick={save} type="button">
-            {room.isClosed ? "Room closed" : "Save settings"}
+            {room.isClosed ? <Trans>Room closed</Trans> : <Trans>Save settings</Trans>}
           </button>
         </footer>
         {confirmationDialog}
@@ -352,6 +357,7 @@ export function RoomSettings({ room, send, onClose, onManageItems }) {
 }
 
 function SortableCard({ card, disabled, onRemove, removable }) {
+  const { t } = useLingui();
   const {
     attributes,
     isDragging,
@@ -373,7 +379,7 @@ function SortableCard({ card, disabled, onRemove, removable }) {
         type="button"
         {...attributes}
         {...listeners}
-        aria-label={`Drag to reorder ${card}`}
+        aria-label={t`Drag to reorder ${card}`}
       >
         <span aria-hidden="true">⠿</span>
       </button>
@@ -383,7 +389,7 @@ function SortableCard({ card, disabled, onRemove, removable }) {
         disabled={disabled || !removable}
         onClick={onRemove}
         type="button"
-        aria-label={`Remove ${card}`}
+        aria-label={t`Remove ${card}`}
       >
         ×
       </button>

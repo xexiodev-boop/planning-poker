@@ -252,6 +252,18 @@ legend { margin-bottom: 6px; }
 }
 .home-footer a { color: var(--green); font-weight: 700; }
 .home-footer a:hover { text-decoration: underline; }
+
+.language-switcher { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); font-size: 12px; font-weight: 600; }
+.language-switcher select {
+  padding: 3px 6px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--paper);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.sidebar-language { display: flex; justify-content: flex-end; padding: 2px 4px; }
 .join-privacy { display: block; margin-top: 14px; color: #89918c; text-align: center; font-size: 12px; }
 .join-privacy a { color: var(--green); font-weight: 700; }
 .join-privacy a:hover { text-decoration: underline; }

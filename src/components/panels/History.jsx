@@ -1,3 +1,4 @@
+import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { useState } from "react";
 import { useModal } from "../../hooks/useModal.js";
 import { exportHistory } from "../../lib/export.js";
@@ -11,22 +12,22 @@ export function History({ room }) {
     <>
       <section className="side-section history-section">
         <div className="side-heading">
-          <h2>Estimates</h2>
+          <h2><Trans>Estimates</Trans></h2>
           <div className="history-heading-actions">
             {history.length > 0 && (
-              <button onClick={() => setExportOpen(!exportOpen)} type="button">Export</button>
+              <button onClick={() => setExportOpen(!exportOpen)} type="button"><Trans>Export</Trans></button>
             )}
             <span>{history.length}</span>
           </div>
         </div>
         {exportOpen && (
           <div className="export-menu">
-            <button onClick={() => exportHistory(room, "csv")} type="button">Download CSV</button>
-            <button onClick={() => exportHistory(room, "markdown")} type="button">Download Markdown</button>
+            <button onClick={() => exportHistory(room, "csv")} type="button"><Trans>Download CSV</Trans></button>
+            <button onClick={() => exportHistory(room, "markdown")} type="button"><Trans>Download Markdown</Trans></button>
           </div>
         )}
         {history.length === 0 ? (
-          <p className="empty-history">Finished tasks will collect here.</p>
+          <p className="empty-history"><Trans>Finished tasks will collect here.</Trans></p>
         ) : (
           <ol className="history-list">
             {history.map((item) => (
@@ -36,7 +37,15 @@ export function History({ room }) {
                   <div>
                     <strong>{item.title}</strong>
                     <small>
-                      {item.metrics ? `${item.metrics.consensusPercent}% agreement` : `${item.votes.filter((vote) => vote.confirmed).length} votes`}
+                      {item.metrics
+                        ? <Trans>{item.metrics.consensusPercent}% agreement</Trans>
+                        : (
+                          <Plural
+                            value={item.votes.filter((vote) => vote.confirmed).length}
+                            one="# vote"
+                            other="# votes"
+                          />
+                        )}
                     </small>
                   </div>
                   <i aria-hidden="true">›</i>
@@ -52,6 +61,7 @@ export function History({ room }) {
 }
 
 function ResultDetail({ item, onClose }) {
+  const { t } = useLingui();
   const counts = new Map();
   item.votes.forEach((vote) => {
     if (vote.value) counts.set(vote.value, (counts.get(vote.value) ?? 0) + 1);
@@ -70,31 +80,31 @@ function ResultDetail({ item, onClose }) {
       >
         <header>
           <div>
-            <p className="eyebrow">Completed estimate</p>
+            <p className="eyebrow"><Trans>Completed estimate</Trans></p>
             <h1 id="result-detail-title">{item.title}</h1>
             <p>{new Date(item.completedAt).toLocaleString()}</p>
           </div>
           <div className="workspace-header-actions">
             <span className="completed-estimate">{item.finalValue}</span>
-            <button className="workspace-close" onClick={onClose} type="button" aria-label="Close details">×</button>
+            <button className="workspace-close" onClick={onClose} type="button" aria-label={t`Close details`}>×</button>
           </div>
         </header>
         <main className="result-detail">
           <section className="result-detail-summary">
             <div>
-              <span>Final estimate</span>
+              <span><Trans>Final estimate</Trans></span>
               <strong>{item.finalValue}</strong>
             </div>
             <div>
-              <span>App suggestion</span>
-              <strong>{item.suggestion?.value ?? "None"}</strong>
+              <span><Trans>App suggestion</Trans></span>
+              <strong>{item.suggestion?.value ?? t`None`}</strong>
             </div>
             <div>
-              <span>Agreement</span>
+              <span><Trans>Agreement</Trans></span>
               <strong>{item.metrics ? `${item.metrics.consensusPercent}%` : "—"}</strong>
             </div>
             <div>
-              <span>Vote range</span>
+              <span><Trans>Vote range</Trans></span>
               <strong>
                 {item.metrics?.low
                   ? item.metrics.low === item.metrics.high ? item.metrics.low : `${item.metrics.low}–${item.metrics.high}`
@@ -104,8 +114,8 @@ function ResultDetail({ item, onClose }) {
           </section>
           <section className="vote-breakdown">
             <div>
-              <p className="eyebrow">Vote breakdown</p>
-              <h2>How the team voted</h2>
+              <p className="eyebrow"><Trans>Vote breakdown</Trans></p>
+              <h2><Trans>How the team voted</Trans></h2>
             </div>
             <div className="breakdown-bars">
               {[...counts.entries()].map(([value, count]) => (
@@ -120,7 +130,7 @@ function ResultDetail({ item, onClose }) {
               {item.votes.map((vote) => (
                 <li key={vote.participantId}>
                   <span>{vote.participantName}</span>
-                  <strong>{vote.value ?? "No vote"}</strong>
+                  <strong>{vote.value ?? t`No vote`}</strong>
                 </li>
               ))}
             </ol>

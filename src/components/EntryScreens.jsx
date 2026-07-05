@@ -1,3 +1,4 @@
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useState } from "react";
 import { readDisplayName, rememberDisplayName } from "../lib/displayName.js";
 
@@ -10,7 +11,9 @@ function roomNameFromId(roomId) {
 }
 
 export function JoinRoom({ roomId, onJoin, error }) {
+  const { t } = useLingui();
   const [name, setName] = useState(readDisplayName);
+  const roomName = roomNameFromId(roomId);
 
   function submit(event) {
     event.preventDefault();
@@ -27,26 +30,28 @@ export function JoinRoom({ roomId, onJoin, error }) {
           <span className="brand-mark">P</span>
           <span>Point Taken</span>
         </a>
-        <p className="eyebrow">You’ve been invited</p>
-        <h1>Join the planning room</h1>
-        <p className="muted">We’ll add a short suffix to your name so everyone stays distinct.</p>
+        <p className="eyebrow"><Trans>You’ve been invited</Trans></p>
+        <h1><Trans>Join the planning room</Trans></h1>
+        <p className="muted"><Trans>We’ll add a short suffix to your name so everyone stays distinct.</Trans></p>
         <form onSubmit={submit}>
           <label>
-            Your name
+            <Trans>Your name</Trans>
             <input
               autoFocus
               maxLength={32}
               onChange={(event) => setName(event.target.value)}
-              placeholder="Your name"
+              placeholder={t`Your name`}
               value={name}
             />
           </label>
           {error && <p className="form-error">{error}</p>}
-          <button className="primary-button" type="submit">Join room</button>
+          <button className="primary-button" type="submit"><Trans>Join room</Trans></button>
         </form>
-        <small className="room-code">You’re joining {roomNameFromId(roomId)}</small>
+        <small className="room-code"><Trans>You’re joining {roomName}</Trans></small>
         <small className="join-privacy">
-          No account needed. <a href="/privacy">How your data is handled</a>.
+          <Trans>
+            No account needed. <a href="/privacy">How your data is handled</a>.
+          </Trans>
         </small>
       </section>
     </main>
@@ -58,7 +63,11 @@ export function LoadingRoom({ status, error }) {
     <main className="center-shell">
       <div className="loading-card">
         <div className="spinner" />
-        <h2>{status === "reconnecting" ? "Finding the room again…" : "Pulling up a chair…"}</h2>
+        <h2>
+          {status === "reconnecting"
+            ? <Trans>Finding the room again…</Trans>
+            : <Trans>Pulling up a chair…</Trans>}
+        </h2>
         {error && <p className="form-error">{error}</p>}
       </div>
     </main>

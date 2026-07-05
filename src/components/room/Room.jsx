@@ -1,3 +1,4 @@
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { describeExpiry } from "../../lib/expiry.js";
 import { takeRecoveryCode } from "../../lib/recovery.js";
@@ -9,9 +10,11 @@ import { History } from "../panels/History.jsx";
 import { ItemManager } from "../panels/ItemManager.jsx";
 import { PeopleList } from "../panels/PeopleList.jsx";
 import { RoomSettings } from "../panels/RoomSettings.jsx";
+import { LanguageSwitcher } from "../LanguageSwitcher.jsx";
 import { SupportBanner } from "../SupportBanner.jsx";
 
 export function Room({ room, send, status, error, onError, notice, onNotice }) {
+  const { t } = useLingui();
   const isFacilitator = room.viewer.role === "facilitator";
   const expiry = describeExpiry(room.expiresAt);
   const [copied, setCopied] = useState(false);
@@ -83,7 +86,7 @@ export function Room({ room, send, status, error, onError, notice, onNotice }) {
       setCopied(true);
       scheduleTimeout(() => setCopied(false), 1600);
     } catch {
-      onError("The invite link could not be copied. Copy it from the address bar instead.");
+      onError(t`The invite link could not be copied. Copy it from the address bar instead.`);
     }
   }
 
@@ -101,25 +104,25 @@ export function Room({ room, send, status, error, onError, notice, onNotice }) {
             <strong>{room.name}</strong>
             {(room.isLocked || room.isClosed) && (
               <span className={`room-state ${room.isClosed ? "closed" : ""}`}>
-                {room.isClosed ? "Closed" : "Locked"}
+                {room.isClosed ? <Trans>Closed</Trans> : <Trans>Locked</Trans>}
               </span>
             )}
-            <span className={`room-expiry ${expiry.near ? "warn" : ""}`} title="Rooms expire after 7 days of inactivity. Any activity keeps them alive.">
+            <span className={`room-expiry ${expiry.near ? "warn" : ""}`} title={t`Rooms expire after 7 days of inactivity. Any activity keeps them alive.`}>
               {expiry.label}
             </span>
           </div>
           <button className="text-button" onClick={copyLink} type="button">
-            {copied ? "Link copied" : "Invite people"}
+            {copied ? <Trans>Link copied</Trans> : <Trans>Invite people</Trans>}
           </button>
           {isFacilitator && (
             <>
               {!room.isClosed && (
                 <button className="text-button" onClick={() => setGuideOpen(true)} type="button">
-                  Quick guide
+                  <Trans>Quick guide</Trans>
                 </button>
               )}
               <button className="text-button" onClick={() => setSettingsOpen(true)} type="button">
-                Room settings
+                <Trans>Room settings</Trans>
               </button>
             </>
           )}
@@ -128,7 +131,7 @@ export function Room({ room, send, status, error, onError, notice, onNotice }) {
           <span style={{ backgroundColor: room.viewer.color }} />
           <div>
             <strong>{room.viewer.displayName}</strong>
-            <small>{isFacilitator ? "Facilitator" : "Participant"}</small>
+            <small>{isFacilitator ? <Trans>Facilitator</Trans> : <Trans>Participant</Trans>}</small>
           </div>
         </div>
       </header>
@@ -136,10 +139,12 @@ export function Room({ room, send, status, error, onError, notice, onNotice }) {
       {isFacilitator && recoveryCode && (
         <div className="recovery-banner" role="note">
           <div>
-            <strong>Save your facilitator recovery link</strong>
+            <strong><Trans>Save your facilitator recovery link</Trans></strong>
             <p>
-              It’s the only way to reclaim this room if you lose this browser or switch devices.
-              We won’t show it again.
+              <Trans>
+                It’s the only way to reclaim this room if you lose this browser or switch devices.
+                We won’t show it again.
+              </Trans>
             </p>
             <code>{recoveryLink}</code>
           </div>
@@ -149,17 +154,17 @@ export function Room({ room, send, status, error, onError, notice, onNotice }) {
               onClick={async () => {
                 try {
                   await navigator.clipboard.writeText(recoveryLink);
-                  onNotice("Recovery link copied — keep it somewhere safe.");
+                  onNotice(t`Recovery link copied — keep it somewhere safe.`);
                 } catch {
-                  onError("Couldn’t copy automatically. Select and copy the link manually.");
+                  onError(t`Couldn’t copy automatically. Select and copy the link manually.`);
                 }
               }}
               type="button"
             >
-              Copy link
+              <Trans>Copy link</Trans>
             </button>
             <button className="secondary-button" onClick={() => setRecoveryCode(null)} type="button">
-              Dismiss
+              <Trans>Dismiss</Trans>
             </button>
           </div>
         </div>
@@ -168,13 +173,13 @@ export function Room({ room, send, status, error, onError, notice, onNotice }) {
       {error && (
         <div className="toast" role="alert">
           <span>{error}</span>
-          <button aria-label="Dismiss message" onClick={() => onError("")} type="button">×</button>
+          <button aria-label={t`Dismiss message`} onClick={() => onError("")} type="button">×</button>
         </div>
       )}
       {notice && (
         <div className="toast notice" role="status">
           <span>{notice}</span>
-          <button aria-label="Dismiss message" onClick={() => onNotice("")} type="button">×</button>
+          <button aria-label={t`Dismiss message`} onClick={() => onNotice("")} type="button">×</button>
         </div>
       )}
       <div className="presence-notifications" aria-live="polite">
@@ -185,7 +190,7 @@ export function Room({ room, send, status, error, onError, notice, onNotice }) {
             </span>
             <div>
               <strong>{notice.person.displayName}</strong>
-              <small>{notice.kind === "joined" ? "joined the room" : "left the room"}</small>
+              <small>{notice.kind === "joined" ? <Trans>joined the room</Trans> : <Trans>left the room</Trans>}</small>
             </div>
           </div>
         ))}
@@ -227,6 +232,9 @@ export function Room({ room, send, status, error, onError, notice, onNotice }) {
         <aside className="sidebar">
           <PeopleList room={room} send={send} />
           <History room={room} />
+          <div className="sidebar-language">
+            <LanguageSwitcher />
+          </div>
         </aside>
       </div>
       <ReactionLayer room={room} send={send} />

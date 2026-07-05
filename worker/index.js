@@ -553,7 +553,10 @@ export class PlanningRoom {
     creator.disconnectedAt = null;
 
     await this.saveRoom(room, { touch: false });
-    await this.announce(room, `${displayName(creator)} recovered facilitator access.`);
+    await this.announce(room, `${displayName(creator)} recovered facilitator access.`, {
+      kind: "facilitator_recovered",
+      params: { name: displayName(creator) },
+    });
     await this.broadcast(room);
     safeLog("facilitator_recovered", { roomId: room.id });
     return json({
@@ -727,6 +730,10 @@ export class PlanningRoom {
         await this.announce(
           room,
           `${displayName(facilitator)} was away, so ${displayName(successor)} is now the facilitator.`,
+          {
+            kind: "facilitator_auto_transferred",
+            params: { from: displayName(facilitator), to: displayName(successor) },
+          },
         );
         await this.broadcast(room);
         safeLog("facilitator_auto_transferred", { roomId: room.id });
@@ -1210,10 +1217,12 @@ export class PlanningRoom {
     };
   }
 
-  async announce(room, message) {
+  // `details` optionally carries { kind, params } so clients can rebuild the
+  // announcement in their own language; `message` stays as the English fallback.
+  async announce(room, message, details = {}) {
     for (const socket of this.ctx.getWebSockets()) {
       try {
-        socket.send(JSON.stringify({ type: "announcement", message }));
+        socket.send(JSON.stringify({ type: "announcement", message, ...details }));
       } catch {
         // Disconnected sockets are cleaned up by the close handler.
       }

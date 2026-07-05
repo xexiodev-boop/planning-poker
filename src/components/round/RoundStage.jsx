@@ -1,3 +1,5 @@
+import { plural } from "@lingui/core/macro";
+import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useMemo, useState } from "react";
 import { useConfirmation } from "../../hooks/useConfirmation.jsx";
 
@@ -9,9 +11,9 @@ export function RoundStage({ room, send, onManageItems }) {
     return (
       <div className="round-stage empty-stage">
         <div className="stage-message">
-          <p className="eyebrow">Session complete</p>
-          <h2>This room is closed</h2>
-          <p>Its estimates remain available here until the room expires.</p>
+          <p className="eyebrow"><Trans>Session complete</Trans></p>
+          <h2><Trans>This room is closed</Trans></h2>
+          <p><Trans>Its estimates remain available here until the room expires.</Trans></p>
         </div>
       </div>
     );
@@ -32,9 +34,13 @@ export function RoundStage({ room, send, onManageItems }) {
           />
         ) : (
           <div className="stage-message">
-            <p className="eyebrow">{round ? "Estimate saved" : "Room is ready"}</p>
-            <h2>Waiting for the facilitator</h2>
-            <p>{round ? "The next task will appear here." : "They’ll bring the first task to the table."}</p>
+            <p className="eyebrow">{round ? <Trans>Estimate saved</Trans> : <Trans>Room is ready</Trans>}</p>
+            <h2><Trans>Waiting for the facilitator</Trans></h2>
+            <p>
+              {round
+                ? <Trans>The next task will appear here.</Trans>
+                : <Trans>They’ll bring the first task to the table.</Trans>}
+            </p>
           </div>
         )}
       </div>
@@ -49,6 +55,7 @@ export function RoundStage({ room, send, onManageItems }) {
 }
 
 function StartRound({ room, send, previousRound, onManageItems }) {
+  const { t } = useLingui();
   const pendingItems = useMemo(
     () => room.items.filter((item) => item.status === "pending"),
     [room.items],
@@ -87,7 +94,7 @@ function StartRound({ room, send, previousRound, onManageItems }) {
       <div className="round-picker">
         <section className="pending-picker">
           <div className="picker-heading">
-            <span>Pending items</span>
+            <span><Trans>Pending items</Trans></span>
             <b>{pendingItems.length}</b>
           </div>
           {pendingItems.length ? (
@@ -110,32 +117,32 @@ function StartRound({ room, send, previousRound, onManageItems }) {
             </div>
           ) : (
             <div className="picker-empty">
-              <p>No items are waiting to be estimated.</p>
+              <p><Trans>No items are waiting to be estimated.</Trans></p>
               <button onClick={onManageItems} type="button">
                 <span aria-hidden="true">+</span>
-                Add items to the estimation queue
+                <Trans>Add items to the estimation queue</Trans>
               </button>
             </div>
           )}
         </section>
 
         <section className="round-choice">
-          <p className="eyebrow">{previousRound ? "Ready for another?" : "First estimate"}</p>
-          <h2>What are we sizing?</h2>
+          <p className="eyebrow">{previousRound ? <Trans>Ready for another?</Trans> : <Trans>First estimate</Trans>}</p>
+          <h2><Trans>What are we sizing?</Trans></h2>
           {source === "backlog" && selectedItem ? (
             <div className="selected-backlog-item">
-              <small>Selected from the item list</small>
+              <small><Trans>Selected from the item list</Trans></small>
               <strong>{selectedItem.title}</strong>
             </div>
           ) : (
             <div className="new-item-entry">
               <label>
-                New item
+                <Trans>New item</Trans>
                 <input
                   autoFocus={!pendingItems.length}
                   maxLength={160}
                   onChange={(event) => setTitle(event.target.value)}
-                  placeholder="Describe the item to estimate"
+                  placeholder={t`Describe the item to estimate`}
                   value={title}
                 />
               </label>
@@ -148,10 +155,10 @@ function StartRound({ room, send, previousRound, onManageItems }) {
                 onClick={() => setSource(source === "new" ? "backlog" : "new")}
                 type="button"
               >
-                {source === "new" ? "Choose a pending item" : "Enter a new item instead"}
+                {source === "new" ? <Trans>Choose a pending item</Trans> : <Trans>Enter a new item instead</Trans>}
               </button>
             )}
-            <button className="primary-button" type="submit">Start voting</button>
+            <button className="primary-button" type="submit"><Trans>Start voting</Trans></button>
           </div>
         </section>
       </div>
@@ -160,6 +167,7 @@ function StartRound({ room, send, previousRound, onManageItems }) {
 }
 
 function VotingStage({ room, send }) {
+  const { t } = useLingui();
   const round = room.currentRound;
   const isFacilitator = room.viewer.role === "facilitator";
   const eligible = room.participants.filter((person) => person.eligible);
@@ -188,9 +196,12 @@ function VotingStage({ room, send }) {
     const missing = eligible.length - voted;
     if (missing > 0) {
       const accepted = await confirm({
-        title: "Reveal cards early?",
-        message: `${missing} ${missing === 1 ? "person is" : "people are"} still deciding. Their card will appear as missing.`,
-        confirmLabel: "Reveal cards",
+        title: t`Reveal cards early?`,
+        message: plural(missing, {
+          one: "# person is still deciding. Their card will appear as missing.",
+          other: "# people are still deciding. Their card will appear as missing.",
+        }),
+        confirmLabel: t`Reveal cards`,
       });
       if (!accepted) return;
     }
@@ -204,37 +215,41 @@ function VotingStage({ room, send }) {
     });
   }
 
+  const eligibleCount = eligible.length;
+
   return (
     <div className="round-stage voting-stage">
-      <p className="eyebrow">Now estimating</p>
+      <p className="eyebrow"><Trans>Now estimating</Trans></p>
       <h1>{round.title}</h1>
       {isFacilitator && <FacilitatorRoundControls room={room} send={send} />}
       <div className="vote-progress">
         <div>
-          <strong>{voted} of {eligible.length}</strong>
-          <span>votes locked</span>
+          <strong><Trans>{voted} of {eligibleCount}</Trans></strong>
+          <span><Trans>votes locked</Trans></span>
         </div>
         <div className="progress-track">
           <span style={{ width: `${eligible.length ? (voted / eligible.length) * 100 : 0}%` }} />
         </div>
-        {!allVoted && hasRevealReminder && remaining > 0 && <small>Reveal suggested in {remaining}s</small>}
-        {(allVoted || round.revealAllowed) && <small className="ready-copy">Ready to reveal</small>}
+        {!allVoted && hasRevealReminder && remaining > 0 && <small><Trans>Reveal suggested in {remaining}s</Trans></small>}
+        {(allVoted || round.revealAllowed) && <small className="ready-copy"><Trans>Ready to reveal</Trans></small>}
       </div>
       {isFacilitator && (
         <button className="reveal-button" onClick={reveal} type="button">
-          Reveal cards
+          <Trans>Reveal cards</Trans>
         </button>
       )}
       {!isFacilitator && (
         <p className="stage-hint">
-          {round.ownVote?.confirmed ? "Your vote is locked. You can still choose another card." : "Choose your card below."}
+          {round.ownVote?.confirmed
+            ? <Trans>Your vote is locked. You can still choose another card.</Trans>
+            : <Trans>Choose your card below.</Trans>}
         </p>
       )}
       {!round.ownVote?.value && room.participants.some(
         (person) => person.id === room.viewer.id && person.eligible,
       ) && (
         <button className="choose-card-cue" onClick={showHand} type="button">
-          Choose a card <span aria-hidden="true">↓</span>
+          <Trans>Choose a card</Trans> <span aria-hidden="true">↓</span>
         </button>
       )}
       {confirmationDialog}
@@ -243,6 +258,7 @@ function VotingStage({ room, send }) {
 }
 
 function FacilitatorRoundControls({ room, send }) {
+  const { t } = useLingui();
   const round = room.currentRound;
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(round.title);
@@ -258,26 +274,29 @@ function FacilitatorRoundControls({ room, send }) {
 
   async function restartVoting() {
     const message = round.phase === "revealed"
-      ? "Clear every card and ask the team to vote again?"
+      ? t`Clear every card and ask the team to vote again?`
       : confirmedVotes
-        ? `Clear ${confirmedVotes} confirmed ${confirmedVotes === 1 ? "vote" : "votes"} and restart the timer?`
-        : "Restart this round and its reveal timer?";
+        ? plural(confirmedVotes, {
+            one: "Clear # confirmed vote and restart the timer?",
+            other: "Clear # confirmed votes and restart the timer?",
+          })
+        : t`Restart this round and its reveal timer?`;
     const accepted = await confirm({
-      title: round.phase === "revealed" ? "Start another ballot?" : "Clear the current votes?",
+      title: round.phase === "revealed" ? t`Start another ballot?` : t`Clear the current votes?`,
       message,
-      confirmLabel: round.phase === "revealed" ? "Vote again" : "Clear votes",
+      confirmLabel: round.phase === "revealed" ? t`Vote again` : t`Clear votes`,
     });
     if (accepted) send({ type: "restart_voting" });
   }
 
   async function cancelRound() {
     const message = round.itemId
-      ? "Cancel this round? Its votes will be discarded and the item will remain pending."
-      : "Cancel this round? Its votes and ad-hoc item will be discarded.";
+      ? t`Cancel this round? Its votes will be discarded and the item will remain pending.`
+      : t`Cancel this round? Its votes and ad-hoc item will be discarded.`;
     const accepted = await confirm({
-      title: "Cancel this round?",
+      title: t`Cancel this round?`,
       message,
-      confirmLabel: "Cancel round",
+      confirmLabel: t`Cancel round`,
       tone: "danger",
     });
     if (accepted) send({ type: "cancel_round" });
@@ -293,7 +312,7 @@ function FacilitatorRoundControls({ room, send }) {
             onChange={(event) => setTitle(event.target.value)}
             value={title}
           />
-          <button className="small-action primary" type="submit">Save</button>
+          <button className="small-action primary" type="submit"><Trans>Save</Trans></button>
           <button
             className="small-action"
             onClick={() => {
@@ -302,19 +321,19 @@ function FacilitatorRoundControls({ room, send }) {
             }}
             type="button"
           >
-            Cancel
+            <Trans>Cancel</Trans>
           </button>
         </form>
       ) : (
         <>
           <button className="round-control-button" onClick={() => setEditing(true)} type="button">
-            <span aria-hidden="true">✎</span> Edit title
+            <span aria-hidden="true">✎</span> <Trans>Edit title</Trans>
           </button>
           <button className="round-control-button" onClick={restartVoting} type="button">
-            <span aria-hidden="true">↻</span> {round.phase === "revealed" ? "Vote again" : "Clear votes"}
+            <span aria-hidden="true">↻</span> {round.phase === "revealed" ? <Trans>Vote again</Trans> : <Trans>Clear votes</Trans>}
           </button>
           <button className="round-control-button danger" onClick={cancelRound} type="button">
-            <span aria-hidden="true">×</span> Cancel round
+            <span aria-hidden="true">×</span> <Trans>Cancel round</Trans>
           </button>
         </>
       )}
@@ -324,6 +343,7 @@ function FacilitatorRoundControls({ room, send }) {
 }
 
 function ResultsStage({ room, send }) {
+  const { t } = useLingui();
   const round = room.currentRound;
   const isFacilitator = room.viewer.role === "facilitator";
   const [finalValue, setFinalValue] = useState(round.suggestion?.value ?? "");
@@ -339,7 +359,7 @@ function ResultsStage({ room, send }) {
 
   return (
     <div className="round-stage results-stage">
-      <p className="eyebrow">Cards on the table</p>
+      <p className="eyebrow"><Trans>Cards on the table</Trans></p>
       <h1>{round.title}</h1>
       {isFacilitator && <FacilitatorRoundControls room={room} send={send} />}
       <div className="result-cards">
@@ -352,9 +372,9 @@ function ResultsStage({ room, send }) {
       </div>
       <div className="result-summary">
         <div>
-          <span>Suggested estimate</span>
-          <strong>{round.suggestion?.value ?? "No signal"}</strong>
-          {round.suggestion?.tied && <small>Split vote · higher tied value shown</small>}
+          <span><Trans>Suggested estimate</Trans></span>
+          <strong>{round.suggestion?.value ?? t`No signal`}</strong>
+          {round.suggestion?.tied && <small><Trans>Split vote · higher tied value shown</Trans></small>}
         </div>
         <div className="tally">
           {tally.map(([value, count]) => <span key={value}>{value} <b>{count}</b></span>)}
@@ -370,15 +390,15 @@ function ResultsStage({ room, send }) {
           }}
         >
           <label>
-            Final estimate
+            <Trans>Final estimate</Trans>
             <input
               maxLength={24}
               onChange={(event) => setFinalValue(event.target.value)}
-              placeholder="Enter a value"
+              placeholder={t`Enter a value`}
               value={finalValue}
             />
           </label>
-          <button className="primary-button" type="submit">Save estimate</button>
+          <button className="primary-button" type="submit"><Trans>Save estimate</Trans></button>
         </form>
       )}
     </div>
@@ -386,27 +406,38 @@ function ResultsStage({ room, send }) {
 }
 
 function ResultMetrics({ metrics }) {
+  const { t } = useLingui();
   if (!metrics) return null;
   const spreadLabel = metrics.low && metrics.high
     ? metrics.low === metrics.high ? metrics.low : `${metrics.low}–${metrics.high}`
-    : "No range";
+    : t`No range`;
 
   return (
     <div className="result-metrics">
       <div>
-        <span>Agreement</span>
+        <span><Trans>Agreement</Trans></span>
         <strong>{metrics.consensusPercent}%</strong>
-        <small>{metrics.unanimous ? "Full consensus" : "Largest voting group"}</small>
+        <small>{metrics.unanimous ? <Trans>Full consensus</Trans> : <Trans>Largest voting group</Trans>}</small>
       </div>
       <div>
-        <span>Vote range</span>
+        <span><Trans>Vote range</Trans></span>
         <strong>{spreadLabel}</strong>
-        <small>{metrics.spread ? `${metrics.spread} deck steps apart` : "No numeric spread"}</small>
+        <small>
+          {metrics.spread
+            ? (
+              <Plural
+                value={metrics.spread}
+                one="# deck step apart"
+                other="# deck steps apart"
+              />
+            )
+            : <Trans>No numeric spread</Trans>}
+        </small>
       </div>
       <div>
-        <span>Cards counted</span>
+        <span><Trans>Cards counted</Trans></span>
         <strong>{metrics.voteCount}</strong>
-        <small>Confirmed votes</small>
+        <small><Trans>Confirmed votes</Trans></small>
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useState } from "react";
 import { dismissSupportBanner, isSupportBannerHidden } from "../lib/supportBanner.js";
 
@@ -5,6 +6,7 @@ import { dismissSupportBanner, isSupportBannerHidden } from "../lib/supportBanne
 const COFFEE_URL = "https://www.buymeacoffee.com/xexiodev";
 
 export function SupportBanner() {
+  const { t } = useLingui();
   const [hidden, setHidden] = useState(isSupportBannerHidden);
   if (hidden) return null;
 
@@ -17,13 +19,15 @@ export function SupportBanner() {
     <div className="support-banner" role="complementary">
       <span className="support-banner-icon" aria-hidden="true">☕</span>
       <p>
-        Enjoying Point Taken? If you find it useful, please consider{" "}
-        <a href={COFFEE_URL} target="_blank" rel="noopener noreferrer">
-          buying me a coffee
-        </a>
-        .
+        <Trans>
+          Enjoying Point Taken? If you find it useful, please consider{" "}
+          <a href={COFFEE_URL} target="_blank" rel="noopener noreferrer">
+            buying me a coffee
+          </a>
+          .
+        </Trans>
       </p>
-      <button aria-label="Dismiss for a week" onClick={dismiss} type="button">
+      <button aria-label={t`Dismiss for a week`} onClick={dismiss} type="button">
         ×
       </button>
     </div>

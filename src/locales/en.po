@@ -1,0 +1,1640 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-07-05 21:58+0200\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en\n"
+
+#. placeholder {0}: estimatedItems.length
+#: src/components/panels/ItemManager.jsx:171
+msgid "{0, plural, one {# already estimated} other {# already estimated}}"
+msgstr "{0, plural, one {# already estimated} other {# already estimated}}"
+
+#. placeholder {0}: metrics.spread
+#: src/components/round/RoundStage.jsx:428
+msgid "{0, plural, one {# deck step apart} other {# deck steps apart}}"
+msgstr "{0, plural, one {# deck step apart} other {# deck steps apart}}"
+
+#. placeholder {0}: itemTitles.split(/\r?\n/).filter((line) => line.trim()).length
+#: src/components/panels/ItemManager.jsx:120
+msgid "{0, plural, one {# item ready} other {# items ready}}"
+msgstr "{0, plural, one {# item ready} other {# items ready}}"
+
+#. placeholder {0}: pendingItems.length
+#: src/components/panels/ItemManager.jsx:139
+msgid "{0, plural, one {# pending} other {# pending}}"
+msgstr "{0, plural, one {# pending} other {# pending}}"
+
+#. placeholder {0}: item.votes.filter((vote) => vote.confirmed).length
+#: src/components/panels/History.jsx:43
+msgid "{0, plural, one {# vote} other {# votes}}"
+msgstr "{0, plural, one {# vote} other {# votes}}"
+
+#. placeholder {0}: item.metrics.consensusPercent
+#: src/components/panels/History.jsx:41
+msgid "{0}% agreement"
+msgstr "{0}% agreement"
+
+#: src/components/round/RoundStage.jsx:279
+msgid "{confirmedVotes, plural, one {Clear # confirmed vote and restart the timer?} other {Clear # confirmed votes and restart the timer?}}"
+msgstr "{confirmedVotes, plural, one {Clear # confirmed vote and restart the timer?} other {Clear # confirmed votes and restart the timer?}}"
+
+#: src/lib/expiry.js:20
+msgid "{days, plural, one {Expires in # day} other {Expires in # days}}"
+msgstr "{days, plural, one {Expires in # day} other {Expires in # days}}"
+
+#: src/lib/serverMessages.js:22
+msgid "{from} was away, so {to} is now the facilitator."
+msgstr "{from} was away, so {to} is now the facilitator."
+
+#: src/components/round/RoundStage.jsx:200
+msgid "{missing, plural, one {# person is still deciding. Their card will appear as missing.} other {# people are still deciding. Their card will appear as missing.}}"
+msgstr "{missing, plural, one {# person is still deciding. Their card will appear as missing.} other {# people are still deciding. Their card will appear as missing.}}"
+
+#: src/lib/serverMessages.js:18
+msgid "{name} recovered facilitator access."
+msgstr "{name} recovered facilitator access."
+
+#: src/components/panels/RoomSettings.jsx:131
+msgid "{pendingCount, plural, one {# pending} other {# pending}}"
+msgstr "{pendingCount, plural, one {# pending} other {# pending}}"
+
+#: src/lib/export.js:55
+msgid "{roomName} estimates"
+msgstr "{roomName} estimates"
+
+#: src/components/round/RoundStage.jsx:227
+msgid "{voted} of {eligibleCount}"
+msgstr "{voted} of {eligibleCount}"
+
+#: src/components/PrivacyPage.jsx:15
+msgid "← Back to home"
+msgstr "← Back to home"
+
+#: src/components/PrivacyPage.jsx:140
+msgid "<0>Automatic expiry:</0> every room is permanently deleted 7 days after its last activity, whether or not anyone deletes it manually."
+msgstr "<0>Automatic expiry:</0> every room is permanently deleted 7 days after its last activity, whether or not anyone deletes it manually."
+
+#: src/components/PrivacyPage.jsx:134
+msgid "<0>Delete now:</0> a facilitator can open Room settings and choose “Delete room” to erase the room, its participants, votes, and history immediately."
+msgstr "<0>Delete now:</0> a facilitator can open Room settings and choose “Delete room” to erase the room, its participants, votes, and history immediately."
+
+#: src/components/PrivacyPage.jsx:89
+msgid "<0>Local storage</0>: your last-used display name and the link to your most recent room, so join and create forms can prefill and the home page can offer you the room again. It also remembers if you dismissed the “buy me a coffee” banner, so it stays hidden for a week, and your language choice if you switch languages in the app."
+msgstr "<0>Local storage</0>: your last-used display name and the link to your most recent room, so join and create forms can prefill and the home page can offer you the room again. It also remembers if you dismissed the “buy me a coffee” banner, so it stays hidden for a week, and your language choice if you switch languages in the app."
+
+#: src/components/PrivacyPage.jsx:146
+msgid "<0>On your device:</0> clearing this site’s browser storage removes the saved name, recent-room link, and identity cookie."
+msgstr "<0>On your device:</0> clearing this site’s browser storage removes the saved name, recent-room link, and identity cookie."
+
+#: src/components/PrivacyPage.jsx:81
+msgid "<0>One identity cookie per room</0> (<1>point_taken_identity</1>): a random token that binds your browser to your seat so your votes and role survive a refresh or reconnect. It is <2>HttpOnly</2>, <3>SameSite=Strict</3>, scoped to that room’s path, and expires within 7 days. It is not an advertising or analytics cookie."
+msgstr "<0>One identity cookie per room</0> (<1>point_taken_identity</1>): a random token that binds your browser to your seat so your votes and role survive a refresh or reconnect. It is <2>HttpOnly</2>, <3>SameSite=Strict</3>, scoped to that room’s path, and expires within 7 days. It is not an advertising or analytics cookie."
+
+#: src/components/PrivacyPage.jsx:97
+msgid "<0>Session storage</0>: a facilitator recovery code is held briefly so it can be shown to you once after a room is created, then removed."
+msgstr "<0>Session storage</0>: a facilitator recovery code is held briefly so it can be shown to you once after a room is created, then removed."
+
+#: src/lib/labels.js:49
+msgid "15 seconds"
+msgstr "15 seconds"
+
+#: src/lib/labels.js:50
+msgid "30 seconds"
+msgstr "30 seconds"
+
+#: src/lib/labels.js:51
+msgid "60 seconds"
+msgstr "60 seconds"
+
+#: src/lib/labels.js:52
+msgid "90 seconds"
+msgstr "90 seconds"
+
+#: src/lib/serverMessages.js:31
+msgid "A deck needs at least two cards."
+msgstr "A deck needs at least two cards."
+
+#: src/components/PrivacyPage.jsx:37
+msgid "A facilitator can delete a room and all of its data instantly, at any time."
+msgstr "A facilitator can delete a room and all of its data instantly, at any time."
+
+#: src/lib/labels.js:15
+msgid "A focused sequence for relative complexity."
+msgstr "A focused sequence for relative complexity."
+
+#: src/components/PrivacyPage.jsx:61
+msgid "A one-way hash (SHA-256) of the facilitator recovery code. The code itself is shown to you once and is never stored — we keep only the hash so it can be checked, not recovered."
+msgstr "A one-way hash (SHA-256) of the facilitator recovery code. The code itself is shown to you once and is never stored — we keep only the hash so it can be checked, not recovered."
+
+#: src/components/panels/ItemManager.jsx:165
+msgid "Add a few items and they’ll appear here in voting order."
+msgstr "Add a few items and they’ll appear here in voting order."
+
+#: src/lib/serverMessages.js:32
+msgid "Add at least one item."
+msgstr "Add at least one item."
+
+#: src/components/panels/RoomSettings.jsx:180
+msgid "Add card"
+msgstr "Add card"
+
+#: src/components/panels/ItemManager.jsx:106
+msgid "Add items"
+msgstr "Add items"
+
+#: src/components/round/RoundStage.jsx:123
+msgid "Add items to the estimation queue"
+msgstr "Add items to the estimation queue"
+
+#: src/lib/serverMessages.js:33
+msgid "Add no more than 100 items at a time."
+msgstr "Add no more than 100 items at a time."
+
+#: src/components/room/FacilitatorGuide.jsx:8
+msgid "Add the items to estimate"
+msgstr "Add the items to estimate"
+
+#: src/components/panels/ItemManager.jsx:127
+msgid "Add to session"
+msgstr "Add to session"
+
+#: src/components/panels/RoomSettings.jsx:147
+msgid "Add, remove, or reorder the cards used in this room."
+msgstr "Add, remove, or reorder the cards used in this room."
+
+#: src/components/panels/RoomSettings.jsx:137
+msgid "Add, review, and remove estimation items"
+msgstr "Add, review, and remove estimation items"
+
+#: src/lib/labels.js:21
+msgid "Agree"
+msgstr "Agree"
+
+#: src/components/room/FacilitatorGuide.jsx:25
+msgid "Agree and save"
+msgstr "Agree and save"
+
+#: src/components/panels/History.jsx:103
+#: src/components/round/RoundStage.jsx:418
+#: src/lib/export.js:33
+#: src/lib/export.js:59
+msgid "Agreement"
+msgstr "Agreement"
+
+#: src/components/panels/RoomSettings.jsx:86
+msgid "All items, votes, participants, and completed estimates will be erased immediately. This cannot be undone."
+msgstr "All items, votes, participants, and completed estimates will be erased immediately. This cannot be undone."
+
+#: src/components/panels/RoomSettings.jsx:312
+msgid "Anyone with the link can currently join."
+msgstr "Anyone with the link can currently join."
+
+#: src/components/panels/History.jsx:99
+msgid "App suggestion"
+msgstr "App suggestion"
+
+#: src/components/panels/PeopleList.jsx:16
+msgid "At the table"
+msgstr "At the table"
+
+#: src/components/panels/RoomSettings.jsx:224
+msgid "Auto-reveal"
+msgstr "Auto-reveal"
+
+#: src/lib/labels.js:42
+msgid "Average numeric votes and round up to a card in the deck."
+msgstr "Average numeric votes and round up to a card in the deck."
+
+#: src/lib/labels.js:33
+msgid "Average, rounded up"
+msgstr "Average, rounded up"
+
+#: src/components/panels/PeopleList.jsx:16
+#: src/components/panels/PeopleList.jsx:134
+msgid "Away"
+msgstr "Away"
+
+#: src/components/room/FacilitatorGuide.jsx:82
+msgid "Back"
+msgstr "Back"
+
+#: src/lib/labels.js:25
+msgid "Break"
+msgstr "Break"
+
+#: src/components/panels/ItemManager.jsx:245
+#: src/components/panels/RoomSettings.jsx:348
+#: src/components/round/RoundStage.jsx:324
+msgid "Cancel"
+msgstr "Cancel"
+
+#: src/components/round/RoundStage.jsx:299
+#: src/components/round/RoundStage.jsx:336
+msgid "Cancel round"
+msgstr "Cancel round"
+
+#: src/components/round/RoundStage.jsx:297
+msgid "Cancel this round?"
+msgstr "Cancel this round?"
+
+#: src/components/round/RoundStage.jsx:295
+msgid "Cancel this round? Its votes and ad-hoc item will be discarded."
+msgstr "Cancel this round? Its votes and ad-hoc item will be discarded."
+
+#: src/components/round/RoundStage.jsx:294
+msgid "Cancel this round? Its votes will be discarded and the item will remain pending."
+msgstr "Cancel this round? Its votes will be discarded and the item will remain pending."
+
+#: src/components/round/RoundStage.jsx:438
+msgid "Cards counted"
+msgstr "Cards counted"
+
+#: src/lib/serverMessages.js:34
+msgid "Cards must be provided as a list."
+msgstr "Cards must be provided as a list."
+
+#: src/components/round/RoundStage.jsx:362
+msgid "Cards on the table"
+msgstr "Cards on the table"
+
+#: src/components/PrivacyPage.jsx:181
+msgid "Changes to this statement"
+msgstr "Changes to this statement"
+
+#: src/components/round/RoundStage.jsx:252
+msgid "Choose a card"
+msgstr "Choose a card"
+
+#: src/lib/serverMessages.js:35
+msgid "Choose a card before confirming."
+msgstr "Choose a card before confirming."
+
+#: src/components/HomePage.jsx:94
+msgid "Choose a deck now. You can invite everyone once you’re inside."
+msgstr "Choose a deck now. You can invite everyone once you’re inside."
+
+#: src/components/round/RoundStage.jsx:158
+msgid "Choose a pending item"
+msgstr "Choose a pending item"
+
+#: src/components/room/ReactionLayer.jsx:84
+msgid "Choose a reaction"
+msgstr "Choose a reaction"
+
+#: src/lib/serverMessages.js:36
+msgid "Choose another person to become facilitator."
+msgstr "Choose another person to become facilitator."
+
+#: src/components/panels/RoomSettings.jsx:188
+msgid "Choose how the app turns the revealed votes into a starting point."
+msgstr "Choose how the app turns the revealed votes into a starting point."
+
+#: src/lib/serverMessages.js:37
+msgid "Choose or enter a final estimate."
+msgstr "Choose or enter a final estimate."
+
+#: src/components/panels/PeopleList.jsx:104
+msgid "Choose who votes, observes, or facilitates the room."
+msgstr "Choose who votes, observes, or facilitates the room."
+
+#: src/components/round/RoundStage.jsx:245
+msgid "Choose your card below."
+msgstr "Choose your card below."
+
+#: src/components/round/RoundStage.jsx:277
+msgid "Clear every card and ask the team to vote again?"
+msgstr "Clear every card and ask the team to vote again?"
+
+#: src/components/panels/RoomSettings.jsx:299
+msgid "Clear reactions"
+msgstr "Clear reactions"
+
+#: src/components/round/RoundStage.jsx:285
+msgid "Clear the current votes?"
+msgstr "Clear the current votes?"
+
+#: src/components/round/RoundStage.jsx:287
+#: src/components/round/RoundStage.jsx:333
+msgid "Clear votes"
+msgstr "Clear votes"
+
+#: src/components/room/FacilitatorGuide.jsx:14
+msgid "Click Invite people in the header and share the room link. Wait for everyone to appear in the People list."
+msgstr "Click Invite people in the header and share the room link. Wait for everyone to appear in the People list."
+
+#: src/components/panels/History.jsx:89
+msgid "Close details"
+msgstr "Close details"
+
+#: src/components/room/FacilitatorGuide.jsx:55
+msgid "Close guide"
+msgstr "Close guide"
+
+#: src/components/panels/ItemManager.jsx:93
+msgid "Close items"
+msgstr "Close items"
+
+#: src/components/panels/PeopleList.jsx:106
+msgid "Close people manager"
+msgstr "Close people manager"
+
+#: src/components/panels/RoomSettings.jsx:75
+#: src/components/panels/RoomSettings.jsx:328
+#: src/components/panels/RoomSettings.jsx:332
+msgid "Close room"
+msgstr "Close room"
+
+#: src/components/panels/RoomSettings.jsx:111
+msgid "Close settings"
+msgstr "Close settings"
+
+#: src/components/panels/RoomSettings.jsx:73
+msgid "Close this room?"
+msgstr "Close this room?"
+
+#: src/components/room/Room.jsx:107
+msgid "Closed"
+msgstr "Closed"
+
+#: src/lib/export.js:33
+msgid "Completed"
+msgstr "Completed"
+
+#: src/components/panels/History.jsx:83
+msgid "Completed estimate"
+msgstr "Completed estimate"
+
+#: src/components/round/CardHand.jsx:56
+msgid "Confirm {selected}"
+msgstr "Confirm {selected}"
+
+#: src/lib/export.js:33
+msgid "Confirmed"
+msgstr "Confirmed"
+
+#: src/components/round/RoundStage.jsx:440
+msgid "Confirmed votes"
+msgstr "Confirmed votes"
+
+#: src/components/panels/PeopleList.jsx:134
+msgid "Connected"
+msgstr "Connected"
+
+#: src/lib/serverMessages.js:38
+msgid "Content-Type must be application/json."
+msgstr "Content-Type must be application/json."
+
+#: src/hooks/useConfirmation.jsx:46
+msgid "Continue"
+msgstr "Continue"
+
+#: src/components/room/Room.jsx:164
+msgid "Copy link"
+msgstr "Copy link"
+
+#: src/components/room/Room.jsx:159
+msgid "Couldn’t copy automatically. Select and copy the link manually."
+msgstr "Couldn’t copy automatically. Select and copy the link manually."
+
+#: src/components/HomePage.jsx:92
+msgid "Create a room"
+msgstr "Create a room"
+
+#: src/components/HomePage.jsx:134
+msgid "Create planning room"
+msgstr "Create planning room"
+
+#: src/lib/serverMessages.js:39
+msgid "Deck cards must be unique."
+msgstr "Deck cards must be unique."
+
+#: src/components/panels/RoomSettings.jsx:87
+#: src/components/panels/RoomSettings.jsx:337
+#: src/components/panels/RoomSettings.jsx:341
+msgid "Delete room"
+msgstr "Delete room"
+
+#: src/components/panels/RoomSettings.jsx:85
+msgid "Delete this room permanently?"
+msgstr "Delete this room permanently?"
+
+#: src/components/round/RoundStage.jsx:145
+msgid "Describe the item to estimate"
+msgstr "Describe the item to estimate"
+
+#: src/components/room/FacilitatorGuide.jsx:26
+msgid "Discuss the revealed cards, choose the final estimate, and click Save estimate. Then move to the next item."
+msgstr "Discuss the revealed cards, choose the final estimate, and click Save estimate. Then move to the next item."
+
+#: src/components/room/Room.jsx:167
+msgid "Dismiss"
+msgstr "Dismiss"
+
+#: src/components/SupportBanner.jsx:30
+msgid "Dismiss for a week"
+msgstr "Dismiss for a week"
+
+#: src/components/room/Room.jsx:176
+#: src/components/room/Room.jsx:182
+msgid "Dismiss message"
+msgstr "Dismiss message"
+
+#: src/components/HomePage.jsx:57
+msgid "Dismiss room reminder"
+msgstr "Dismiss room reminder"
+
+#: src/components/panels/History.jsx:25
+msgid "Download CSV"
+msgstr "Download CSV"
+
+#: src/components/panels/History.jsx:26
+msgid "Download Markdown"
+msgstr "Download Markdown"
+
+#. placeholder {0}: item.title
+#: src/components/panels/ItemManager.jsx:224
+msgid "Drag to reorder {0}"
+msgstr "Drag to reorder {0}"
+
+#: src/components/panels/RoomSettings.jsx:382
+msgid "Drag to reorder {card}"
+msgstr "Drag to reorder {card}"
+
+#: src/components/panels/PeopleList.jsx:111
+msgid "During a round you can remove people, but roles and facilitator ownership stay fixed."
+msgstr "During a round you can remove people, but roles and facilitator ownership stay fixed."
+
+#: src/components/PrivacyPage.jsx:54
+msgid "Each room keeps only what it needs to run the session on the server that hosts it:"
+msgstr "Each room keeps only what it needs to run the session on the server that hosts it:"
+
+#: src/components/panels/ItemManager.jsx:259
+msgid "Edit"
+msgstr "Edit"
+
+#. placeholder {0}: item.title
+#: src/components/panels/ItemManager.jsx:257
+msgid "Edit {0}"
+msgstr "Edit {0}"
+
+#: src/components/round/RoundStage.jsx:330
+msgid "Edit title"
+msgstr "Edit title"
+
+#: src/components/SupportBanner.jsx:22
+msgid "Enjoying Point Taken? If you find it useful, please consider <0>buying me a coffee</0>."
+msgstr "Enjoying Point Taken? If you find it useful, please consider <0>buying me a coffee</0>."
+
+#: src/components/round/RoundStage.jsx:158
+msgid "Enter a new item instead"
+msgstr "Enter a new item instead"
+
+#: src/lib/serverMessages.js:40
+msgid "Enter a task title."
+msgstr "Enter a task title."
+
+#: src/components/round/RoundStage.jsx:397
+msgid "Enter a value"
+msgstr "Enter a value"
+
+#: src/lib/serverMessages.js:41
+msgid "Enter an item title."
+msgstr "Enter an item title."
+
+#: src/components/round/RoundStage.jsx:37
+msgid "Estimate saved"
+msgstr "Estimate saved"
+
+#: src/components/panels/History.jsx:15
+msgid "Estimates"
+msgstr "Estimates"
+
+#: src/components/panels/ItemManager.jsx:87
+msgid "Estimation queue"
+msgstr "Estimation queue"
+
+#: src/components/panels/RoomSettings.jsx:74
+msgid "Existing participants can review completed estimates, but nobody will be able to vote or join."
+msgstr "Existing participants can review completed estimates, but nobody will be able to vote or join."
+
+#: src/lib/expiry.js:10
+msgid "Expired"
+msgstr "Expired"
+
+#: src/lib/expiry.js:14
+msgid "Expires in {hours} hours"
+msgstr "Expires in {hours} hours"
+
+#: src/lib/expiry.js:14
+msgid "Expires within an hour"
+msgstr "Expires within an hour"
+
+#: src/components/panels/History.jsx:18
+msgid "Export"
+msgstr "Export"
+
+#: src/components/panels/PeopleList.jsx:12
+#: src/components/panels/PeopleList.jsx:124
+#: src/components/room/Room.jsx:134
+msgid "Facilitator"
+msgstr "Facilitator"
+
+#: src/App.jsx:144
+msgid "Facilitator access recovered."
+msgstr "Facilitator access recovered."
+
+#: src/components/panels/PeopleList.jsx:102
+#: src/components/panels/RoomSettings.jsx:108
+msgid "Facilitator controls"
+msgstr "Facilitator controls"
+
+#: src/components/room/FacilitatorGuide.jsx:52
+msgid "Facilitator tutorial"
+msgstr "Facilitator tutorial"
+
+#: src/lib/labels.js:9
+msgid "Fibonacci"
+msgstr "Fibonacci"
+
+#: src/components/panels/History.jsx:95
+#: src/components/round/RoundStage.jsx:393
+#: src/lib/export.js:33
+#: src/lib/export.js:57
+msgid "Final estimate"
+msgstr "Final estimate"
+
+#: src/components/HomePage.jsx:75
+msgid "Find the estimate your team can stand behind."
+msgstr "Find the estimate your team can stand behind."
+
+#: src/components/EntryScreens.jsx:68
+msgid "Finding the room again…"
+msgstr "Finding the room again…"
+
+#: src/components/room/FacilitatorGuide.jsx:89
+msgid "Finish"
+msgstr "Finish"
+
+#: src/components/panels/RoomSettings.jsx:121
+msgid "Finish the current round before changing its deck or suggestion rules."
+msgstr "Finish the current round before changing its deck or suggestion rules."
+
+#: src/components/panels/History.jsx:30
+msgid "Finished tasks will collect here."
+msgstr "Finished tasks will collect here."
+
+#: src/components/round/RoundStage.jsx:130
+msgid "First estimate"
+msgstr "First estimate"
+
+#: src/lib/labels.js:40
+msgid "For tied leaders, choose the card nearest their midpoint."
+msgstr "For tied leaders, choose the card nearest their midpoint."
+
+#: src/components/HomePage.jsx:140
+msgid "Free · privacy-first · no accounts"
+msgstr "Free · privacy-first · no accounts"
+
+#: src/components/PrivacyPage.jsx:155
+msgid "Free, and provided “as is”"
+msgstr "Free, and provided “as is”"
+
+#: src/components/round/RoundStage.jsx:420
+msgid "Full consensus"
+msgstr "Full consensus"
+
+#: src/lib/serverMessages.js:42
+msgid "Give reactions a moment to breathe."
+msgstr "Give reactions a moment to breathe."
+
+#: src/lib/labels.js:34
+msgid "Highest vote"
+msgstr "Highest vote"
+
+#: src/components/PrivacyPage.jsx:117
+msgid "Hosting and infrastructure"
+msgstr "Hosting and infrastructure"
+
+#: src/components/PrivacyPage.jsx:20
+msgid "How Point Taken treats your data"
+msgstr "How Point Taken treats your data"
+
+#: src/components/panels/History.jsx:118
+msgid "How the team voted"
+msgstr "How the team voted"
+
+#: src/components/PrivacyPage.jsx:183
+msgid "If this statement changes, the “last updated” date above will change with it. Because there are no accounts, material changes cannot be emailed to you — the current version always lives at this page."
+msgstr "If this statement changes, the “last updated” date above will change with it. Because there are no accounts, material changes cannot be emailed to you — the current version always lives at this page."
+
+#: src/components/panels/RoomSettings.jsx:338
+msgid "Immediately erase the room and all of its data."
+msgstr "Immediately erase the room and all of its data."
+
+#: src/lib/serverMessages.js:43
+msgid "Invalid room identity."
+msgstr "Invalid room identity."
+
+#: src/components/room/Room.jsx:115
+msgid "Invite people"
+msgstr "Invite people"
+
+#: src/components/panels/PeopleList.jsx:167
+msgid "Invite someone with the room link and they’ll appear here."
+msgstr "Invite someone with the room link and they’ll appear here."
+
+#: src/components/room/FacilitatorGuide.jsx:13
+msgid "Invite your team"
+msgstr "Invite your team"
+
+#: src/components/room/Room.jsx:144
+msgid "It’s the only way to reclaim this room if you lose this browser or switch devices. We won’t show it again."
+msgstr "It’s the only way to reclaim this room if you lose this browser or switch devices. We won’t show it again."
+
+#: src/lib/export.js:33
+msgid "Item"
+msgstr "Item"
+
+#: src/lib/serverMessages.js:44
+msgid "Items must be provided as a list."
+msgstr "Items must be provided as a list."
+
+#: src/components/panels/ItemManager.jsx:88
+#: src/components/panels/RoomSettings.jsx:127
+msgid "Items to estimate"
+msgstr "Items to estimate"
+
+#: src/components/round/RoundStage.jsx:16
+msgid "Its estimates remain available here until the room expires."
+msgstr "Its estimates remain available here until the room expires."
+
+#: src/components/EntryScreens.jsx:48
+msgid "Join room"
+msgstr "Join room"
+
+#: src/components/EntryScreens.jsx:34
+msgid "Join the planning room"
+msgstr "Join the planning room"
+
+#: src/components/room/Room.jsx:193
+msgid "joined the room"
+msgstr "joined the room"
+
+#: src/lib/serverMessages.js:45
+msgid "Keep at least one reaction available."
+msgstr "Keep at least one reaction available."
+
+#: src/hooks/useConfirmation.jsx:39
+msgid "Keep editing"
+msgstr "Keep editing"
+
+#: src/components/LanguageSwitcher.jsx:10
+msgid "Language"
+msgstr "Language"
+
+#: src/components/round/RoundStage.jsx:420
+msgid "Largest voting group"
+msgstr "Largest voting group"
+
+#: src/components/PrivacyPage.jsx:28
+msgid "Last updated: 5 July 2026"
+msgstr "Last updated: 5 July 2026"
+
+#: src/components/room/Room.jsx:193
+msgid "left the room"
+msgstr "left the room"
+
+#: src/components/panels/RoomSettings.jsx:242
+msgid "Let people signal agreement, uncertainty, breaks, or a wish to speak."
+msgstr "Let people signal agreement, uncertainty, breaks, or a wish to speak."
+
+#: src/components/room/Room.jsx:115
+msgid "Link copied"
+msgstr "Link copied"
+
+#: src/components/HomePage.jsx:83
+msgid "Live voting"
+msgstr "Live voting"
+
+#: src/components/panels/RoomSettings.jsx:321
+msgid "Lock room"
+msgstr "Lock room"
+
+#: src/components/room/Room.jsx:107
+msgid "Locked"
+msgstr "Locked"
+
+#: src/components/round/CardHand.jsx:59
+msgid "Locked · {selected}"
+msgstr "Locked · {selected}"
+
+#: src/components/panels/ItemManager.jsx:114
+msgid "Login with SSO\n"
+"Add audit log export\n"
+"Improve empty states"
+msgstr "Login with SSO\n"
+"Add audit log export\n"
+"Improve empty states"
+
+#: src/components/room/ReactionLayer.jsx:129
+msgid "Lower hand"
+msgstr "Lower hand"
+
+#: src/components/HomePage.jsx:141
+msgid "Made by <0>xexio.dev</0>"
+msgstr "Made by <0>xexio.dev</0>"
+
+#: src/components/PrivacyPage.jsx:206
+msgid "Made by <0>xexio.dev</0> · Spain"
+msgstr "Made by <0>xexio.dev</0> · Spain"
+
+#. placeholder {0}: person.displayName
+#: src/components/panels/PeopleList.jsx:69
+msgid "Make {0} facilitator?"
+msgstr "Make {0} facilitator?"
+
+#: src/components/panels/PeopleList.jsx:156
+msgid "Make facilitator"
+msgstr "Make facilitator"
+
+#: src/components/panels/RoomSettings.jsx:329
+msgid "Make this session read-only until it expires."
+msgstr "Make this session read-only until it expires."
+
+#: src/components/panels/PeopleList.jsx:26
+msgid "Manage"
+msgstr "Manage"
+
+#: src/components/panels/PeopleList.jsx:103
+msgid "Manage people"
+msgstr "Manage people"
+
+#: src/lib/labels.js:32
+msgid "Median"
+msgstr "Median"
+
+#: src/lib/labels.js:31
+msgid "Middle ground"
+msgstr "Middle ground"
+
+#: src/lib/labels.js:10
+msgid "Modified Fibonacci"
+msgstr "Modified Fibonacci"
+
+#: src/lib/labels.js:16
+msgid "More range for larger or less certain work."
+msgstr "More range for larger or less certain work."
+
+#: src/lib/labels.js:30
+msgid "Most votes"
+msgstr "Most votes"
+
+#: src/lib/labels.js:26
+msgid "Need to speak"
+msgstr "Need to speak"
+
+#: src/components/panels/RoomSettings.jsx:177
+msgid "New card"
+msgstr "New card"
+
+#: src/components/round/RoundStage.jsx:140
+msgid "New item"
+msgstr "New item"
+
+#: src/components/panels/RoomSettings.jsx:311
+msgid "New participants cannot join. Existing participants can reconnect."
+msgstr "New participants cannot join. Existing participants can reconnect."
+
+#: src/components/room/FacilitatorGuide.jsx:89
+msgid "Next"
+msgstr "Next"
+
+#: src/lib/labels.js:24
+msgid "Nice"
+msgstr "Nice"
+
+#: src/lib/export.js:42
+msgid "No"
+msgstr "No"
+
+#: src/components/EntryScreens.jsx:52
+msgid "No account needed. <0>How your data is handled</0>."
+msgstr "No account needed. <0>How your data is handled</0>."
+
+#: src/components/PrivacyPage.jsx:42
+msgid "No accounts"
+msgstr "No accounts"
+
+#: src/components/PrivacyPage.jsx:109
+msgid "No analytics or usage tracking, and no advertising or marketing profiles."
+msgstr "No analytics or usage tracking, and no advertising or marketing profiles."
+
+#: src/components/PrivacyPage.jsx:35
+msgid "No analytics, no advertising, no third-party trackers, and nothing is sold or shared."
+msgstr "No analytics, no advertising, no third-party trackers, and nothing is sold or shared."
+
+#: src/components/round/RoundStage.jsx:120
+msgid "No items are waiting to be estimated."
+msgstr "No items are waiting to be estimated."
+
+#: src/components/PrivacyPage.jsx:111
+msgid "No location data, contacts, or device fingerprinting."
+msgstr "No location data, contacts, or device fingerprinting."
+
+#: src/components/round/RoundStage.jsx:434
+msgid "No numeric spread"
+msgstr "No numeric spread"
+
+#: src/components/round/RoundStage.jsx:413
+msgid "No range"
+msgstr "No range"
+
+#: src/components/PrivacyPage.jsx:33
+msgid "No sign-up. No email, password, or profile is ever required."
+msgstr "No sign-up. No email, password, or profile is ever required."
+
+#: src/components/round/RoundStage.jsx:376
+msgid "No signal"
+msgstr "No signal"
+
+#: src/lib/labels.js:35
+msgid "No suggestion"
+msgstr "No suggestion"
+
+#: src/components/PrivacyPage.jsx:110
+msgid "No third-party scripts, embeds, or trackers load in the app."
+msgstr "No third-party scripts, embeds, or trackers load in the app."
+
+#: src/components/panels/History.jsx:133
+#: src/lib/export.js:61
+msgid "No vote"
+msgstr "No vote"
+
+#: src/components/panels/History.jsx:100
+#: src/lib/export.js:58
+msgid "None"
+msgstr "None"
+
+#: src/lib/serverMessages.js:46
+msgid "Not found"
+msgstr "Not found"
+
+#: src/components/round/RoundStage.jsx:222
+msgid "Now estimating"
+msgstr "Now estimating"
+
+#: src/components/panels/PeopleList.jsx:44
+#: src/components/panels/PeopleList.jsx:147
+msgid "Observer"
+msgstr "Observer"
+
+#: src/components/panels/PeopleList.jsx:14
+msgid "Observer · Away"
+msgstr "Observer · Away"
+
+#: src/components/panels/PeopleList.jsx:14
+msgid "Observer · Here"
+msgstr "Observer · Here"
+
+#: src/lib/labels.js:48
+msgid "Off"
+msgstr "Off"
+
+#: src/components/HomePage.jsx:77
+msgid "Open a room, invite your team, and turn different instincts into one clear decision. No accounts. No setup detour."
+msgstr "Open a room, invite your team, and turn different instincts into one clear decision. No accounts. No setup detour."
+
+#: src/components/HomePage.jsx:52
+msgid "Open it again or press <0>{bookmarkShortcut}</0> there to bookmark it."
+msgstr "Open it again or press <0>{bookmarkShortcut}</0> there to bookmark it."
+
+#: src/components/panels/RoomSettings.jsx:136
+#: src/components/room/FacilitatorGuide.jsx:10
+msgid "Open item manager"
+msgstr "Open item manager"
+
+#: src/components/HomePage.jsx:55
+msgid "Open room"
+msgstr "Open room"
+
+#: src/components/room/FacilitatorGuide.jsx:9
+msgid "Open the item manager and enter one item per line. Arrange them in the order you want to discuss them."
+msgstr "Open the item manager and enter one item per line. Arrange them in the order you want to discuss them."
+
+#: src/components/HomePage.jsx:134
+msgid "Opening the room…"
+msgstr "Opening the room…"
+
+#: src/components/panels/PeopleList.jsx:146
+#: src/components/room/Room.jsx:134
+#: src/lib/export.js:60
+msgid "Participant"
+msgstr "Participant"
+
+#: src/components/PrivacyPage.jsx:57
+msgid "Participant display names and their role (facilitator, voter, or observer)."
+msgstr "Participant display names and their role (facilitator, voter, or observer)."
+
+#: src/components/panels/ItemManager.jsx:107
+msgid "Paste a list from your backlog or write the work down here."
+msgstr "Paste a list from your backlog or write the work down here."
+
+#: src/components/panels/RoomSettings.jsx:291
+msgid "Pause reactions"
+msgstr "Pause reactions"
+
+#: src/components/round/RoundStage.jsx:97
+msgid "Pending items"
+msgstr "Pending items"
+
+#: src/components/panels/PeopleList.jsx:23
+msgid "People"
+msgstr "People"
+
+#: src/components/HomePage.jsx:111
+msgid "Pick one to start. You can tweak the deck later in room settings."
+msgstr "Pick one to start. You can tweak the deck later in room settings."
+
+#: src/components/round/CardHand.jsx:50
+msgid "Pick the closest fit"
+msgstr "Pick the closest fit"
+
+#: src/lib/labels.js:41
+msgid "Pick the middle submitted card, reducing the effect of extremes."
+msgstr "Pick the middle submitted card, reducing the effect of extremes."
+
+#: src/lib/labels.js:39
+msgid "Pick the most popular card; ties lean higher."
+msgstr "Pick the most popular card; ties lean higher."
+
+#: src/components/HomePage.jsx:110
+#: src/components/panels/RoomSettings.jsx:146
+msgid "Planning deck"
+msgstr "Planning deck"
+
+#: src/components/HomePage.jsx:74
+msgid "Planning poker without the ceremony"
+msgstr "Planning poker without the ceremony"
+
+#: src/components/PrivacyPage.jsx:22
+msgid "Point Taken is a free, real-time planning-poker room for teams. It is built privacy-first: no accounts, no tracking, and no more data than a voting session actually needs. This page explains, in plain language, what is stored, what is not, and how to remove it."
+msgstr "Point Taken is a free, real-time planning-poker room for teams. It is built privacy-first: no accounts, no tracking, and no more data than a voting session actually needs. This page explains, in plain language, what is stored, what is not, and how to remove it."
+
+#: src/components/PrivacyPage.jsx:169
+msgid "Point Taken is free and has no ads or paid tiers. A small banner may invite you to support its upkeep by “buying me a coffee.” It is entirely optional and changes nothing about the app if you ignore or dismiss it — dismissing it just hides it for a week (see browser storage above). The link opens an external payment service (Buy Me a Coffee) in a new tab; no third-party scripts or trackers are loaded inside Point Taken itself, but once you follow that link you are on their site, subject to their own privacy practices."
+msgstr "Point Taken is free and has no ads or paid tiers. A small banner may invite you to support its upkeep by “buying me a coffee.” It is entirely optional and changes nothing about the app if you ignore or dismiss it — dismissing it just hides it for a week (see browser storage above). The link opens an external payment service (Buy Me a Coffee) in a new tab; no third-party scripts or trackers are loaded inside Point Taken itself, but once you follow that link you are on their site, subject to their own privacy practices."
+
+#: src/components/PrivacyPage.jsx:157
+msgid "Point Taken is free to use for teams and individuals. It is offered as-is, without warranty of any kind: while it is built and maintained with care, availability, data retention, and fitness for any particular purpose are not guaranteed. Please don’t rely on a room as a system of record — export or note down estimates you need to keep, since rooms expire."
+msgstr "Point Taken is free to use for teams and individuals. It is offered as-is, without warranty of any kind: while it is built and maintained with care, availability, data retention, and fitness for any particular purpose are not guaranteed. Please don’t rely on a room as a system of record — export or note down estimates you need to keep, since rooms expire."
+
+#: src/components/PrivacyPage.jsx:194
+msgid "Point Taken is made by <0>xexio.dev</0>, an independent developer based in Spain, and is not affiliated with any company. For any privacy question or request, contact me at <1>{CONTACT_EMAIL}</1>."
+msgstr "Point Taken is made by <0>xexio.dev</0>, an independent developer based in Spain, and is not affiliated with any company. For any privacy question or request, contact me at <1>{CONTACT_EMAIL}</1>."
+
+#: src/components/PrivacyPage.jsx:78
+msgid "Point Taken uses a small amount of browser storage purely to keep a session working and to save you re-typing. None of it is used for tracking, and it never leaves your device except the identity cookie, which is sent only to this site."
+msgstr "Point Taken uses a small amount of browser storage purely to keep a session working and to save you re-typing. None of it is used for tracking, and it never leaves your device except the identity cookie, which is sent only to this site."
+
+#: src/components/panels/RoomSettings.jsx:128
+msgid "Prepare and maintain the work this room will estimate."
+msgstr "Prepare and maintain the work this room will estimate."
+
+#: src/components/panels/ItemManager.jsx:89
+msgid "Prepare the session before voting starts. Add one item per line."
+msgstr "Prepare the session before voting starts. Add one item per line."
+
+#: src/components/HomePage.jsx:84
+msgid "Private cards"
+msgstr "Private cards"
+
+#: src/components/HomePage.jsx:82
+msgid "Product highlights"
+msgstr "Product highlights"
+
+#: src/components/EntryScreens.jsx:69
+msgid "Pulling up a chair…"
+msgstr "Pulling up a chair…"
+
+#: src/components/room/Room.jsx:121
+msgid "Quick guide"
+msgstr "Quick guide"
+
+#: src/lib/labels.js:17
+msgid "Quick, conversational sizing without numbers."
+msgstr "Quick, conversational sizing without numbers."
+
+#: src/components/room/ReactionLayer.jsx:129
+msgid "Raise hand"
+msgstr "Raise hand"
+
+#: src/components/room/ReactionLayer.jsx:117
+msgid "React"
+msgstr "React"
+
+#: src/lib/serverMessages.js:47
+msgid "Reaction palette must be a list."
+msgstr "Reaction palette must be a list."
+
+#: src/lib/serverMessages.js:48
+msgid "Reactions are currently paused."
+msgstr "Reactions are currently paused."
+
+#: src/components/room/ReactionLayer.jsx:131
+msgid "Reactions paused"
+msgstr "Reactions paused"
+
+#: src/components/round/RoundStage.jsx:130
+msgid "Ready for another?"
+msgstr "Ready for another?"
+
+#: src/components/round/CardHand.jsx:49
+msgid "Ready to lock it in?"
+msgstr "Ready to lock it in?"
+
+#: src/components/round/RoundStage.jsx:234
+msgid "Ready to reveal"
+msgstr "Ready to reveal"
+
+#: src/components/room/Room.jsx:157
+msgid "Recovery link copied — keep it somewhere safe."
+msgstr "Recovery link copied — keep it somewhere safe."
+
+#: src/components/panels/PeopleList.jsx:159
+msgid "Remove"
+msgstr "Remove"
+
+#. placeholder {0}: item.title
+#: src/components/panels/ItemManager.jsx:266
+msgid "Remove {0}"
+msgstr "Remove {0}"
+
+#. placeholder {0}: person.displayName
+#: src/components/panels/PeopleList.jsx:80
+msgid "Remove {0}?"
+msgstr "Remove {0}?"
+
+#: src/components/panels/RoomSettings.jsx:392
+msgid "Remove {card}"
+msgstr "Remove {card}"
+
+#: src/components/panels/PeopleList.jsx:84
+msgid "Remove person"
+msgstr "Remove person"
+
+#: src/components/PrivacyPage.jsx:131
+msgid "Removing your data"
+msgstr "Removing your data"
+
+#: src/lib/serverMessages.js:49
+msgid "Request body must be valid JSON."
+msgstr "Request body must be valid JSON."
+
+#: src/lib/serverMessages.js:50
+msgid "Request is too large."
+msgstr "Request is too large."
+
+#: src/lib/serverMessages.js:51
+msgid "Request origin is not allowed."
+msgstr "Request origin is not allowed."
+
+#: src/components/panels/RoomSettings.jsx:150
+msgid "Reset deck"
+msgstr "Reset deck"
+
+#: src/components/round/RoundStage.jsx:283
+msgid "Restart this round and its reveal timer?"
+msgstr "Restart this round and its reveal timer?"
+
+#: src/components/panels/RoomSettings.jsx:291
+msgid "Resume reactions"
+msgstr "Resume reactions"
+
+#: src/components/round/RoundStage.jsx:204
+#: src/components/round/RoundStage.jsx:238
+msgid "Reveal cards"
+msgstr "Reveal cards"
+
+#: src/components/round/RoundStage.jsx:199
+msgid "Reveal cards early?"
+msgstr "Reveal cards early?"
+
+#: src/components/panels/RoomSettings.jsx:212
+msgid "Reveal reminder"
+msgstr "Reveal reminder"
+
+#: src/components/round/RoundStage.jsx:233
+msgid "Reveal suggested in {remaining}s"
+msgstr "Reveal suggested in {remaining}s"
+
+#: src/lib/serverMessages.js:52
+msgid "Reveal the cards first."
+msgstr "Reveal the cards first."
+
+#: src/lib/labels.js:23
+msgid "Reviewing"
+msgstr "Reviewing"
+
+#. placeholder {0}: person.displayName
+#: src/components/panels/PeopleList.jsx:137
+msgid "Role for {0}"
+msgstr "Role for {0}"
+
+#: src/components/panels/RoomSettings.jsx:308
+msgid "Room access"
+msgstr "Room access"
+
+#: src/lib/serverMessages.js:53
+msgid "Room already exists."
+msgstr "Room already exists."
+
+#: src/components/panels/RoomSettings.jsx:350
+msgid "Room closed"
+msgstr "Room closed"
+
+#: src/components/round/RoundStage.jsx:37
+msgid "Room is ready"
+msgstr "Room is ready"
+
+#: src/lib/serverMessages.js:54
+msgid "Room message is too large."
+msgstr "Room message is too large."
+
+#: src/components/panels/RoomSettings.jsx:109
+#: src/components/room/Room.jsx:125
+msgid "Room settings"
+msgstr "Room settings"
+
+#: src/components/PrivacyPage.jsx:36
+msgid "Rooms and everything in them are deleted automatically 7 days after the last activity."
+msgstr "Rooms and everything in them are deleted automatically 7 days after the last activity."
+
+#: src/components/room/Room.jsx:110
+msgid "Rooms expire after 7 days of inactivity. Any activity keeps them alive."
+msgstr "Rooms expire after 7 days of inactivity. Any activity keeps them alive."
+
+#: src/components/room/FacilitatorGuide.jsx:53
+msgid "Run your first planning session"
+msgstr "Run your first planning session"
+
+#: src/components/panels/ItemManager.jsx:237
+#: src/components/round/RoundStage.jsx:315
+msgid "Save"
+msgstr "Save"
+
+#: src/components/round/RoundStage.jsx:401
+msgid "Save estimate"
+msgstr "Save estimate"
+
+#: src/components/panels/RoomSettings.jsx:350
+msgid "Save settings"
+msgstr "Save settings"
+
+#: src/components/room/Room.jsx:142
+msgid "Save your facilitator recovery link"
+msgstr "Save your facilitator recovery link"
+
+#: src/components/room/FacilitatorGuide.jsx:18
+msgid "Select an item from the estimation queue, or enter a new one, then click Start voting."
+msgstr "Select an item from the estimation queue, or enter a new one, then click Start voting."
+
+#: src/components/round/CardHand.jsx:52
+msgid "Select one card to continue"
+msgstr "Select one card to continue"
+
+#: src/components/round/RoundStage.jsx:134
+msgid "Selected from the item list"
+msgstr "Selected from the item list"
+
+#: src/components/round/RoundStage.jsx:14
+msgid "Session complete"
+msgstr "Session complete"
+
+#: src/components/panels/ItemManager.jsx:137
+msgid "Session queue"
+msgstr "Session queue"
+
+#: src/components/HomePage.jsx:85
+msgid "Seven-day rooms"
+msgstr "Seven-day rooms"
+
+#: src/components/PrivacyPage.jsx:59
+msgid "Short-lived reactions and raised hands, which clear on their own within seconds."
+msgstr "Short-lived reactions and raised hands, which clear on their own within seconds."
+
+#: src/lib/labels.js:44
+msgid "Show the votes and leave the decision entirely to the team."
+msgstr "Show the votes and leave the decision entirely to the team."
+
+#: src/components/panels/RoomSettings.jsx:213
+msgid "Signal when it may be time to turn the cards over."
+msgstr "Signal when it may be time to turn the cards over."
+
+#: src/lib/api.js:15
+msgid "Something went wrong."
+msgstr "Something went wrong."
+
+#: src/lib/serverMessages.js:55
+msgid "Something went wrong. Please try again."
+msgstr "Something went wrong. Please try again."
+
+#: src/components/round/RoundStage.jsx:377
+msgid "Split vote · higher tied value shown"
+msgstr "Split vote · higher tied value shown"
+
+#: src/components/round/RoundStage.jsx:285
+msgid "Start another ballot?"
+msgstr "Start another ballot?"
+
+#: src/components/room/FacilitatorGuide.jsx:17
+msgid "Start the vote"
+msgstr "Start the vote"
+
+#: src/components/round/RoundStage.jsx:161
+msgid "Start voting"
+msgstr "Start voting"
+
+#: src/components/room/FacilitatorGuide.jsx:58
+msgid "Step {stepNumber} of {stepCount}"
+msgstr "Step {stepNumber} of {stepCount}"
+
+#: src/components/panels/RoomSettings.jsx:187
+#: src/components/round/RoundStage.jsx:375
+#: src/lib/export.js:33
+#: src/lib/export.js:58
+msgid "Suggested estimate"
+msgstr "Suggested estimate"
+
+#: src/components/PrivacyPage.jsx:167
+msgid "Supporting the project"
+msgstr "Supporting the project"
+
+#: src/lib/labels.js:11
+msgid "T-shirt sizes"
+msgstr "T-shirt sizes"
+
+#: src/components/panels/RoomSettings.jsx:241
+msgid "Team reactions"
+msgstr "Team reactions"
+
+#: src/components/HomePage.jsx:23
+msgid "Tell the room what to call you."
+msgstr "Tell the room what to call you."
+
+#: src/lib/serverMessages.js:56
+msgid "That action could not be completed."
+msgstr "That action could not be completed."
+
+#: src/lib/serverMessages.js:57
+msgid "That card is not in this deck."
+msgstr "That card is not in this deck."
+
+#: src/lib/serverMessages.js:58
+msgid "That item is already in the estimation queue."
+msgstr "That item is already in the estimation queue."
+
+#: src/lib/serverMessages.js:59
+msgid "That item is no longer pending."
+msgstr "That item is no longer pending."
+
+#: src/lib/serverMessages.js:60
+msgid "That participant cannot be changed."
+msgstr "That participant cannot be changed."
+
+#: src/lib/serverMessages.js:61
+msgid "That participant cannot be removed."
+msgstr "That participant cannot be removed."
+
+#: src/lib/serverMessages.js:62
+msgid "That pending item was not found."
+msgstr "That pending item was not found."
+
+#: src/lib/serverMessages.js:63
+msgid "That reaction is not available."
+msgstr "That reaction is not available."
+
+#: src/lib/serverMessages.js:64
+msgid "That recovery code is not valid for this room."
+msgstr "That recovery code is not valid for this room."
+
+#: src/components/PrivacyPage.jsx:119
+msgid "The app runs on Cloudflare’s network (Workers and Durable Objects). To deliver the service and protect it from abuse, Cloudflare processes connection details — including your IP address — transiently for connectivity, security, and rate-limiting. The app uses your IP only as a short-lived counter to limit how many rooms can be created or joined in a short window; it is not linked to your name or votes. This processing is covered by Cloudflare’s own privacy practices."
+msgstr "The app runs on Cloudflare’s network (Workers and Durable Objects). To deliver the service and protect it from abuse, Cloudflare processes connection details — including your IP address — transiently for connectivity, security, and rate-limiting. The app uses your IP only as a short-lived counter to limit how many rooms can be created or joined in a short window; it is not linked to your name or votes. This processing is covered by Cloudflare’s own privacy practices."
+
+#: src/components/room/Room.jsx:89
+msgid "The invite link could not be copied. Copy it from the address bar instead."
+msgstr "The invite link could not be copied. Copy it from the address bar instead."
+
+#: src/components/panels/ItemManager.jsx:99
+msgid "The item list is read-only while a round is active."
+msgstr "The item list is read-only while a round is active."
+
+#: src/components/round/RoundStage.jsx:41
+msgid "The next task will appear here."
+msgstr "The next task will appear here."
+
+#: src/components/PrivacyPage.jsx:34
+msgid "The only personal detail we handle is the display name you choose — a nickname is fine."
+msgstr "The only personal detail we handle is the display name you choose — a nickname is fine."
+
+#: src/lib/serverMessages.js:65
+msgid "The pending item order is no longer current."
+msgstr "The pending item order is no longer current."
+
+#: src/components/room/FacilitatorGuide.jsx:22
+msgid "The People list shows who has voted. When the team is ready, click Reveal cards."
+msgstr "The People list shows who has voted. When the team is ready, click Reveal cards."
+
+#: src/App.jsx:185
+msgid "The room is reconnecting. Try that again in a moment."
+msgstr "The room is reconnecting. Try that again in a moment."
+
+#: src/components/PrivacyPage.jsx:56
+msgid "The room name, the planning deck, and the room settings."
+msgstr "The room name, the planning deck, and the room settings."
+
+#: src/App.jsx:79
+msgid "The room sent an unreadable update. Reconnecting may help."
+msgstr "The room sent an unreadable update. Reconnecting may help."
+
+#: src/components/PrivacyPage.jsx:31
+msgid "The short version"
+msgstr "The short version"
+
+#: src/lib/serverMessages.js:66
+msgid "There is no active round to cancel."
+msgstr "There is no active round to cancel."
+
+#: src/lib/serverMessages.js:67
+msgid "There is no active round to edit."
+msgstr "There is no active round to edit."
+
+#: src/lib/serverMessages.js:68
+msgid "There is no active round to restart."
+msgstr "There is no active round to restart."
+
+#: src/lib/serverMessages.js:69
+msgid "There is no voting round to reveal."
+msgstr "There is no voting round to reveal."
+
+#: src/components/PrivacyPage.jsx:44
+msgid "There is nothing to register. When you create or join a room you type a display name, to which the app appends a short random suffix so people with the same name stay distinct. You are identified only within that one room, only for as long as it exists."
+msgstr "There is nothing to register. When you create or join a room you type a display name, to which the app appends a short random suffix so people with the same name stay distinct. You are identified only within that one room, only for as long as it exists."
+
+#: src/components/panels/PeopleList.jsx:83
+msgid "They’ll be disconnected and their room identity will stop working."
+msgstr "They’ll be disconnected and their room identity will stop working."
+
+#: src/components/round/RoundStage.jsx:42
+msgid "They’ll bring the first task to the table."
+msgstr "They’ll bring the first task to the table."
+
+#: src/components/panels/PeopleList.jsx:82
+msgid "They’ll leave immediately and their current vote will be discarded."
+msgstr "They’ll leave immediately and their current vote will be discarded."
+
+#: src/lib/serverMessages.js:70
+msgid "This room has been closed."
+msgstr "This room has been closed."
+
+#: src/lib/serverMessages.js:71
+msgid "This room has expired or does not exist."
+msgstr "This room has expired or does not exist."
+
+#: src/components/round/RoundStage.jsx:15
+msgid "This room is closed"
+msgstr "This room is closed"
+
+#: src/lib/serverMessages.js:72
+msgid "This room is closed and can only be viewed."
+msgstr "This room is closed and can only be viewed."
+
+#: src/components/panels/RoomSettings.jsx:117
+msgid "This room is closed and read-only. Settings can’t be changed, but you can still delete it below."
+msgstr "This room is closed and read-only. Settings can’t be changed, but you can still delete it below."
+
+#: src/lib/serverMessages.js:73
+msgid "This room is not accepting new participants."
+msgstr "This room is not accepting new participants."
+
+#: src/components/PrivacyPage.jsx:66
+msgid "Timestamps for when the room was created, last used, and is due to expire."
+msgstr "Timestamps for when the room was created, last used, and is due to expire."
+
+#: src/lib/serverMessages.js:74
+msgid "Too many attempts. Try again shortly."
+msgstr "Too many attempts. Try again shortly."
+
+#: src/lib/serverMessages.js:75
+msgid "Too many room actions. Slow down and try again."
+msgstr "Too many room actions. Slow down and try again."
+
+#: src/lib/serverMessages.js:76
+msgid "Too many rooms created. Try again shortly."
+msgstr "Too many rooms created. Try again shortly."
+
+#: src/components/panels/PeopleList.jsx:71
+msgid "Transfer facilitator"
+msgstr "Transfer facilitator"
+
+#: src/components/panels/PeopleList.jsx:154
+msgid "Transfer facilitator ownership"
+msgstr "Transfer facilitator ownership"
+
+#: src/components/panels/RoomSettings.jsx:225
+msgid "Turn the cards over automatically once everyone has voted."
+msgstr "Turn the cards over automatically once everyone has voted."
+
+#: src/lib/serverMessages.js:77
+msgid "Unknown participant role."
+msgstr "Unknown participant role."
+
+#: src/lib/serverMessages.js:78
+msgid "Unknown room action."
+msgstr "Unknown room action."
+
+#: src/lib/serverMessages.js:79
+msgid "Unknown suggestion algorithm."
+msgstr "Unknown suggestion algorithm."
+
+#: src/components/panels/RoomSettings.jsx:321
+msgid "Unlock room"
+msgstr "Unlock room"
+
+#: src/lib/serverMessages.js:80
+msgid "Unsupported reveal timer."
+msgstr "Unsupported reveal timer."
+
+#: src/lib/labels.js:22
+msgid "Unsure"
+msgstr "Unsure"
+
+#: src/components/HomePage.jsx:142
+#: src/components/PrivacyPage.jsx:19
+msgid "Usage & privacy"
+msgstr "Usage & privacy"
+
+#: src/lib/labels.js:43
+msgid "Use the most cautious submitted estimate."
+msgstr "Use the most cautious submitted estimate."
+
+#: src/lib/export.js:33
+#: src/lib/export.js:60
+msgid "Vote"
+msgstr "Vote"
+
+#: src/components/round/RoundStage.jsx:287
+#: src/components/round/RoundStage.jsx:333
+msgid "Vote again"
+msgstr "Vote again"
+
+#: src/components/panels/History.jsx:117
+msgid "Vote breakdown"
+msgstr "Vote breakdown"
+
+#: src/components/round/CardHand.jsx:47
+msgid "Vote locked"
+msgstr "Vote locked"
+
+#: src/components/panels/History.jsx:107
+#: src/components/round/RoundStage.jsx:423
+msgid "Vote range"
+msgstr "Vote range"
+
+#: src/lib/export.js:33
+msgid "Voter"
+msgstr "Voter"
+
+#: src/components/PrivacyPage.jsx:58
+msgid "Votes during a round and the finalized estimates in the room’s history."
+msgstr "Votes during a round and the finalized estimates in the room’s history."
+
+#: src/components/round/RoundStage.jsx:228
+msgid "votes locked"
+msgstr "votes locked"
+
+#: src/components/PrivacyPage.jsx:69
+msgid "Votes stay hidden from other participants until the facilitator reveals them (or everyone has voted, if auto-reveal is on). We do not store IP addresses alongside your activity."
+msgstr "Votes stay hidden from other participants until the facilitator reveals them (or everyone has voted, if auto-reveal is on). We do not store IP addresses alongside your activity."
+
+#: src/lib/serverMessages.js:81
+msgid "Voting is not open."
+msgstr "Voting is not open."
+
+#: src/components/room/FacilitatorGuide.jsx:21
+msgid "Wait for the votes"
+msgstr "Wait for the votes"
+
+#: src/components/round/RoundStage.jsx:38
+msgid "Waiting for the facilitator"
+msgstr "Waiting for the facilitator"
+
+#: src/components/EntryScreens.jsx:35
+msgid "We’ll add a short suffix to your name so everyone stays distinct."
+msgstr "We’ll add a short suffix to your name so everyone stays distinct."
+
+#: src/components/round/RoundStage.jsx:131
+msgid "What are we sizing?"
+msgstr "What are we sizing?"
+
+#: src/components/PrivacyPage.jsx:53
+msgid "What is stored while a room is live"
+msgstr "What is stored while a room is live"
+
+#: src/components/PrivacyPage.jsx:77
+msgid "What stays on your device"
+msgstr "What stays on your device"
+
+#: src/components/PrivacyPage.jsx:107
+msgid "What we do not collect"
+msgstr "What we do not collect"
+
+#: src/components/PrivacyPage.jsx:192
+msgid "Who runs this & how to reach out"
+msgstr "Who runs this & how to reach out"
+
+#: src/lib/export.js:42
+msgid "Yes"
+msgstr "Yes"
+
+#: src/components/panels/PeopleList.jsx:122
+msgid "You · Facilitator"
+msgstr "You · Facilitator"
+
+#: src/components/PrivacyPage.jsx:103
+msgid "You can clear any of this at any time from your browser’s site-data settings."
+msgstr "You can clear any of this at any time from your browser’s site-data settings."
+
+#: src/components/HomePage.jsx:50
+msgid "You created this room."
+msgstr "You created this room."
+
+#: src/lib/serverMessages.js:82
+msgid "You joined after this round started and can vote in the next one."
+msgstr "You joined after this round started and can vote in the next one."
+
+#: src/components/round/CardHand.jsx:31
+msgid "You joined during this round. Your hand opens on the next task."
+msgstr "You joined during this round. Your hand opens on the next task."
+
+#: src/components/HomePage.jsx:51
+msgid "You joined this room."
+msgstr "You joined this room."
+
+#: src/App.jsx:91
+msgid "You were removed from this room."
+msgstr "You were removed from this room."
+
+#: src/components/HomePage.jsx:93
+msgid "You’ll be the facilitator."
+msgstr "You’ll be the facilitator."
+
+#: src/components/panels/PeopleList.jsx:70
+msgid "You’ll become a regular participant and they’ll receive all facilitator controls."
+msgstr "You’ll become a regular participant and they’ll receive all facilitator controls."
+
+#: src/components/EntryScreens.jsx:50
+msgid "You’re joining {roomName}"
+msgstr "You’re joining {roomName}"
+
+#: src/components/round/CardHand.jsx:30
+msgid "You’re observing this session. Observers can follow the discussion without voting."
+msgstr "You’re observing this session. Observers can follow the discussion without voting."
+
+#: src/components/EntryScreens.jsx:33
+msgid "You’ve been invited"
+msgstr "You’ve been invited"
+
+#: src/components/PrivacyPage.jsx:112
+msgid "Your data is never sold, rented, or shared with anyone."
+msgstr "Your data is never sold, rented, or shared with anyone."
+
+#: src/components/round/CardHand.jsx:44
+msgid "Your hand"
+msgstr "Your hand"
+
+#: src/components/EntryScreens.jsx:38
+#: src/components/EntryScreens.jsx:43
+#: src/components/HomePage.jsx:99
+#: src/components/HomePage.jsx:104
+msgid "Your name"
+msgstr "Your name"
+
+#: src/components/HomePage.jsx:46
+msgid "Your planning room is still active"
+msgstr "Your planning room is still active"
+
+#: src/components/panels/ItemManager.jsx:164
+msgid "Your queue is empty"
+msgstr "Your queue is empty"
+
+#: src/lib/serverMessages.js:83
+msgid "Your room identity is no longer valid."
+msgstr "Your room identity is no longer valid."
+
+#: src/components/round/RoundStage.jsx:244
+msgid "Your vote is locked. You can still choose another card."
+msgstr "Your vote is locked. You can still choose another card."

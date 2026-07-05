@@ -1,3 +1,5 @@
+import { plural, t } from "@lingui/core/macro";
+
 const EXPIRY_WARNING_MS = 24 * 60 * 60 * 1000;
 
 // Rooms expire after 7 days of inactivity; any facilitator action slides the
@@ -5,11 +7,17 @@ const EXPIRY_WARNING_MS = 24 * 60 * 60 * 1000;
 // surprise. `near` flags the last day so the facilitator can nudge it along.
 export function describeExpiry(expiresAt) {
   const remaining = expiresAt - Date.now();
-  if (remaining <= 0) return { label: "Expired", near: true };
+  if (remaining <= 0) return { label: t`Expired`, near: true };
   if (remaining < EXPIRY_WARNING_MS) {
     const hours = Math.ceil(remaining / (60 * 60 * 1000));
-    return { label: hours > 1 ? `Expires in ${hours} hours` : "Expires within an hour", near: true };
+    return {
+      label: hours > 1 ? t`Expires in ${hours} hours` : t`Expires within an hour`,
+      near: true,
+    };
   }
   const days = Math.round(remaining / (24 * 60 * 60 * 1000));
-  return { label: `Expires in ${days} day${days === 1 ? "" : "s"}`, near: false };
+  return {
+    label: plural(days, { one: "Expires in # day", other: "Expires in # days" }),
+    near: false,
+  };
 }

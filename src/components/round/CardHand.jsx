@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import { useEffect, useRef } from "react";
 
 export function CardHand({ room, send }) {
@@ -26,8 +27,8 @@ export function CardHand({ room, send }) {
     return (
       <div className="late-join-note">
         {room.viewer.role === "observer"
-          ? "You’re observing this session. Observers can follow the discussion without voting."
-          : "You joined during this round. Your hand opens on the next task."}
+          ? <Trans>You’re observing this session. Observers can follow the discussion without voting.</Trans>
+          : <Trans>You joined during this round. Your hand opens on the next task.</Trans>}
       </div>
     );
   }
@@ -40,16 +41,22 @@ export function CardHand({ room, send }) {
     >
       <div className="hand-heading">
         <div>
-          <p className="eyebrow">Your hand</p>
-          <h3>{confirmed ? "Vote locked" : selected ? "Ready to lock it in?" : "Pick the closest fit"}</h3>
-          {!selected && <small className="hand-prompt">Select one card to continue</small>}
+          <p className="eyebrow"><Trans>Your hand</Trans></p>
+          <h3>
+            {confirmed
+              ? <Trans>Vote locked</Trans>
+              : selected
+                ? <Trans>Ready to lock it in?</Trans>
+                : <Trans>Pick the closest fit</Trans>}
+          </h3>
+          {!selected && <small className="hand-prompt"><Trans>Select one card to continue</Trans></small>}
         </div>
         {selected && !confirmed && (
           <button className="primary-button compact" onClick={() => send({ type: "confirm_vote" })} type="button">
-            Confirm {selected}
+            <Trans>Confirm {selected}</Trans>
           </button>
         )}
-        {confirmed && <span className="locked-badge">Locked · {selected}</span>}
+        {confirmed && <span className="locked-badge"><Trans>Locked · {selected}</Trans></span>}
       </div>
       <div className="cards">
         {room.deck.cards.map((value) => (
