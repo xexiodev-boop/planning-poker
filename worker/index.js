@@ -88,8 +88,21 @@ function validateOrigin(request, requestUrl, env) {
   return Boolean(origin && allowed.has(origin));
 }
 
+// A room's id is also its join credential (the room URL), so it must never
+// appear in logs. Replace it with a short one-way tag: events for the same
+// room stay correlatable, but the tag cannot be turned back into a room link.
+function roomTag(roomId) {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < roomId.length; index += 1) {
+    hash ^= roomId.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash.toString(16).padStart(8, "0");
+}
+
 function safeLog(event, details = {}) {
-  console.log({ event, ...details });
+  const { roomId, ...rest } = details;
+  console.log(roomId ? { event, room: roomTag(roomId), ...rest } : { event, ...rest });
 }
 
 function randomItem(items) {

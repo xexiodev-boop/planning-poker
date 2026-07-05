@@ -37,7 +37,9 @@ Privacy is the point, not an afterthought:
   can delete a room and all of its data instantly at any time.
 - Participant identity lives in a room-scoped, HttpOnly, SameSite cookie. It is never exposed
   to application JavaScript or included in WebSocket URLs.
-- Operational logs exclude names, votes, task titles, and identity tokens.
+- Operational logs exclude names, votes, task titles, identity tokens, and joinable room
+  ids: rooms appear only as one-way hashed tags, and automatic per-request URL logging
+  is disabled.
 - Exports are generated entirely in the browser; nothing leaves the room to produce them.
 
 ## How a session works

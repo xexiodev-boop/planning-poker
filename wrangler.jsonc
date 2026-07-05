@@ -40,6 +40,12 @@
     }
   ],
   "observability": {
-    "enabled": true
+    "enabled": true,
+    "logs": {
+      // Automatic per-request logs include the full URL, and a room URL is a
+      // join credential. Keep only the app's own structured events, which
+      // reduce room ids to one-way tags.
+      "invocation_logs": false
+    }
   }
 }
