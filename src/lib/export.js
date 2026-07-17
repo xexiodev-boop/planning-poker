@@ -1,0 +1,65 @@
+import { t } from "@lingui/core/macro";
+
+// Byte-order mark: leads CSV output so Excel opens it as UTF-8 rather than ANSI,
+// keeping emoji, fractions, and accented names intact. Built from a char code so
+// the source file stays pure ASCII.
+const UTF8_BOM = String.fromCharCode(0xfeff);
+
+export function csvCell(value) {
+  const text = String(value ?? "");
+  const safe = /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
+  return `"${safe.replaceAll('"', '""')}"`;
+}
+
+// Escape the table-cell delimiter so a name/vote containing "|" can't break the
+// generated Markdown table layout.
+function mdCell(value) {
+  return String(value ?? "").replaceAll("|", "\\|");
+}
+
+function downloadText(filename, content, type) {
+  const url = URL.createObjectURL(new Blob([content], { type }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+export function exportHistory(room, format) {
+  const filename = room.name.toLowerCase().replaceAll(" ", "-");
+
+  if (format === "csv") {
+    const rows = [[t`Item`, t`Final estimate`, t`Suggested estimate`, t`Agreement`, t`Voter`, t`Vote`, t`Confirmed`, t`Completed`]];
+    room.history.slice().reverse().forEach((item) => {
+      item.votes.forEach((vote) => rows.push([
+        item.title,
+        item.finalValue,
+        item.suggestion?.value ?? "",
+        item.metrics ? `${item.metrics.consensusPercent}%` : "",
+        vote.participantName,
+        vote.value ?? "",
+        vote.confirmed ? t`Yes` : t`No`,
+        new Date(item.completedAt).toISOString(),
+      ]));
+    });
+    downloadText(
+      `${filename}-estimates.csv`,
+      `${UTF8_BOM}${rows.map((row) => row.map(csvCell).join(",")).join("\n")}`,
+      "text/csv",
+    );
+    return;
+  }
+
+  const roomName = room.name;
+  const lines = [`# ${t`${roomName} estimates`}`, ""];
+  room.history.slice().reverse().forEach((item) => {
+    lines.push(`## ${item.title}`, "", `- ${t`Final estimate`}: **${item.finalValue}**`);
+    lines.push(`- ${t`Suggested estimate`}: ${item.suggestion?.value ?? t`None`}`);
+    if (item.metrics) lines.push(`- ${t`Agreement`}: ${item.metrics.consensusPercent}%`);
+    lines.push("", `| ${t`Participant`} | ${t`Vote`} |`, "| --- | --- |");
+    item.votes.forEach((vote) => lines.push(`| ${mdCell(vote.participantName)} | ${mdCell(vote.value ?? t`No vote`)} |`));
+    lines.push("");
+  });
+  downloadText(`${filename}-estimates.md`, lines.join("\n"), "text/markdown");
+}

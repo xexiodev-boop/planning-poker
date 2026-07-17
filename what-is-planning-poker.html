@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href="https://pointtaken.team/what-is-planning-poker" />
+    <link rel="alternate" hreflang="en" href="https://pointtaken.team/what-is-planning-poker" />
+    <link rel="alternate" hreflang="es" href="https://pointtaken.team/es/what-is-planning-poker" />
+    <link rel="alternate" hreflang="x-default" href="https://pointtaken.team/what-is-planning-poker" />
+    <meta name="theme-color" content="#1c6b4d" />
+    <meta
+      name="description"
+      content="Planning poker (Scrum poker) explained: how the estimation game works, why teams use Fibonacci numbers, story points vs hours, and how to run a session with your team. Includes a free tool to try it."
+    />
+    <link rel="stylesheet" href="/src/styles.css" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Point Taken" />
+    <meta property="og:url" content="https://pointtaken.team/what-is-planning-poker" />
+    <meta property="og:title" content="What Is Planning Poker? Agile Estimation, Explained" />
+    <meta
+      property="og:description"
+      content="How planning poker works, why the cards use Fibonacci numbers, and how to run a session with your team."
+    />
+    <meta property="og:image" content="https://pointtaken.team/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Point Taken — planning poker without the ceremony" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="What Is Planning Poker? Agile Estimation, Explained" />
+    <meta
+      name="twitter:description"
+      content="How planning poker works, why the cards use Fibonacci numbers, and how to run a session with your team."
+    />
+    <meta name="twitter:image" content="https://pointtaken.team/og-image.png" />
+
+    <!-- Rich result hints: the article itself plus its FAQ section. Answers
+         must stay in sync with the visible FAQ text below. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Article",
+            "headline": "What is planning poker?",
+            "description": "Planning poker (Scrum poker) explained: how the estimation game works, why teams use Fibonacci numbers, and how to run a session.",
+            "url": "https://pointtaken.team/what-is-planning-poker",
+            "inLanguage": "en",
+            "datePublished": "2026-07-07",
+            "dateModified": "2026-07-07",
+            "author": { "@type": "Person", "name": "xexio.dev", "url": "https://xexio.dev" },
+            "publisher": { "@type": "Organization", "name": "Point Taken", "url": "https://pointtaken.team/" }
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Is planning poker only for Scrum teams?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "No. It comes from the Scrum and XP world, but any team that needs to size work before committing to it can use planning poker: Kanban teams, support teams splitting projects, even non-software groups."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How many people should take part?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Everyone who will actually build the work should vote, typically three to ten people. Stakeholders can watch as observers, but estimates belong to the people doing the work."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Does planning poker work for remote teams?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. Online planning poker rooms replace the physical card deck: everyone votes privately from their own device and the cards are revealed simultaneously, exactly like sitting around a table."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What if the team never converges on one number?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "After two or three rounds, either take the higher estimate and move on, or treat the disagreement as a signal: the story is probably too big or too vaguely defined, and should be split or clarified before anyone works on it."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Are the estimates commitments?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "No. Estimates are forecasts made with the information available at the time. They help a team plan a sprint and spot risk early. They are not deadlines, and treating them as deadlines quickly teaches people to inflate them."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+
+    <title>What Is Planning Poker? Agile Estimation, Explained | Point Taken</title>
+  </head>
+  <body>
+    <main class="legal-shell">
+      <header class="legal-header">
+        <a class="brand" href="/">
+          <span class="brand-mark">P</span>
+          <span>Point Taken</span>
+        </a>
+        <nav>
+          <a class="text-button" href="/es/what-is-planning-poker" hreflang="es" lang="es">Español</a>
+          <a class="text-button" href="/">← Back to home</a>
+        </nav>
+      </header>
+
+      <article class="legal-article">
+        <p class="eyebrow">Agile estimation, explained</p>
+        <h1>What is planning poker?</h1>
+        <p class="legal-lede">
+          Planning poker, also called Scrum poker, is a consensus-based technique agile teams use
+          to estimate work. Everyone privately picks a card with a number on it, all cards are
+          revealed at the same time, and the differences between them start the conversation that
+          actually matters.
+        </p>
+        <p class="legal-meta">Last updated: 7 July 2026</p>
+
+        <aside class="inline-cta">
+          <p>Need a room right now? It's always free, with no sign-up.</p>
+          <a class="primary-button compact" href="/">Create a room</a>
+        </aside>
+
+        <section>
+          <h2>The short version</h2>
+          <ul>
+            <li>Each estimator holds a deck of cards with numbers on them, usually a Fibonacci-like sequence.</li>
+            <li>The team discusses one item of work, then everyone picks a card <em>privately</em>.</li>
+            <li>All cards are revealed at once, so nobody anchors on the loudest or most senior voice.</li>
+            <li>Matching estimates get recorded. Different estimates are not a problem; they are the point. The outliers explain their reasoning, and the team votes again.</li>
+            <li>All you need is a deck of cards and your team, or a free online room if you're remote.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Where it comes from</h2>
+          <p>
+            Planning poker was described by James Grenning in 2002 and popularized by Mike Cohn's
+            book <em>Agile Estimating and Planning</em>. It is a lightweight descendant of Wideband
+            Delphi, an estimation method built on a simple observation: a group of practitioners,
+            estimating independently and then discussing, produces better forecasts than any single
+            expert, and far better than a group that estimates out loud, where the first number
+            spoken drags everyone else toward it.
+          </p>
+        </section>
+
+        <section>
+          <h2>How a session works</h2>
+          <ol>
+            <li>The facilitator brings the list of items to estimate: user stories, features, tasks.</li>
+            <li>Someone who knows the item (often the product owner) presents it briefly, and the team asks clarifying questions.</li>
+            <li>Every estimator picks a card, face down. Nobody sees anyone else's choice.</li>
+            <li>All cards are revealed simultaneously.</li>
+            <li>If the numbers agree, the estimate is recorded and the team moves on. If they don't, the highest and lowest estimators each explain their reasoning, and the team votes again.</li>
+            <li>Most items converge within a round or two. If one doesn't, that disagreement is useful information (more on that below).</li>
+          </ol>
+          <p>
+            A whole backlog rarely needs estimating in one sitting. Timebox the session, keep
+            discussion per item to a few minutes, and park anything that turns into a design debate.
+          </p>
+        </section>
+
+        <section>
+          <h2>Why the simultaneous reveal matters</h2>
+          <p>
+            The card mechanic isn't a gimmick. It neutralizes two forces that quietly ruin
+            estimates made out loud:
+          </p>
+          <ul>
+            <li>
+              <strong>Anchoring.</strong> Once someone says &ldquo;that's about a five,&rdquo; every
+              later estimate gravitates toward five. Private voting means every estimate is formed
+              independently.
+            </li>
+            <li>
+              <strong>Hierarchy.</strong> When the tech lead speaks first, disagreeing has social
+              cost. When cards flip together, the junior developer's 13 gets the same weight as
+              everyone's 5, and it forces the question that matters: <em>what do they know that we
+              don't?</em>
+            </li>
+          </ul>
+          <p>
+            That question is the real output of planning poker. A spread of estimates almost always
+            means people are imagining different work: one person assumed the old API could be
+            reused, another knew it has to be rewritten. The estimate is just the excuse to surface
+            those assumptions before the sprint starts instead of two weeks into it.
+          </p>
+        </section>
+
+        <section>
+          <h2>Why the cards use Fibonacci numbers</h2>
+          <p>
+            Most decks use a Fibonacci-like sequence (1, 2, 3, 5, 8, 13, 21) rather than every
+            integer. The growing gaps are deliberate: people are decent at telling a 2 from a 3,
+            but nobody can meaningfully distinguish a 12 from a 13. The bigger the work, the bigger
+            the uncertainty, and the sequence forces that honesty. You can't hide behind false
+            precision; you have to choose between 8 and 13.
+          </p>
+          <p>
+            Common variants include T-shirt sizes (XS to XL) for rough, early-stage sizing and
+            powers of two (1, 2, 4, 8, 16). Most decks also carry a <code>?</code> card (&ldquo;I
+            can't estimate this without more information&rdquo;) and a coffee-cup card (&ldquo;we
+            need a break&rdquo;). Both are worth taking seriously when they appear.
+          </p>
+        </section>
+
+        <section>
+          <h2>Story points, not hours</h2>
+          <p>
+            Planning poker estimates are usually <strong>story points</strong>: relative measures of
+            size, complexity, and uncertainty, not units of time. A 5-point story is roughly as big
+            as other 5-point stories the team has done; that is all a point claims. Over a few
+            sprints, the team's measured velocity converts points into a calendar forecast far more
+            reliably than summing hour guesses ever does. Hours invite false precision, vary by
+            who picks up the task, and have a way of getting compared against timesheets, at which
+            point people stop estimating and start negotiating.
+          </p>
+        </section>
+
+        <section>
+          <h2>Common questions</h2>
+
+          <h3>Is planning poker only for Scrum teams?</h3>
+          <p>
+            No. It comes from the Scrum and XP world, but any team that needs to size work before
+            committing to it can use planning poker: Kanban teams, support teams splitting
+            projects, even non-software groups.
+          </p>
+
+          <h3>How many people should take part?</h3>
+          <p>
+            Everyone who will actually build the work should vote, typically three to ten people.
+            Stakeholders can watch as observers, but estimates belong to the people doing the work.
+          </p>
+
+          <h3>Does planning poker work for remote teams?</h3>
+          <p>
+            Yes. Online planning poker rooms replace the physical card deck: everyone votes
+            privately from their own device and the cards are revealed simultaneously, exactly like
+            sitting around a table.
+          </p>
+
+          <h3>What if the team never converges on one number?</h3>
+          <p>
+            After two or three rounds, either take the higher estimate and move on, or treat the
+            disagreement as a signal: the story is probably too big or too vaguely defined, and
+            should be split or clarified before anyone works on it.
+          </p>
+
+          <h3>Are the estimates commitments?</h3>
+          <p>
+            No. Estimates are forecasts made with the information available at the time. They help
+            a team plan a sprint and spot risk early. They are not deadlines, and treating them as
+            deadlines quickly teaches people to inflate them.
+          </p>
+        </section>
+
+        <section>
+          <h2>Try it with your team</h2>
+          <p>
+            Point Taken is a free planning poker room built for exactly this: live voting, cards
+            that stay hidden until the reveal, and nothing between your team and an estimate. No
+            sign-up, no ads, no tracking. Open a room, share the link, and start with your next
+            backlog item.
+          </p>
+          <a class="primary-button" href="/">Start a free planning room</a>
+        </section>
+      </article>
+
+      <footer class="legal-footer">
+        <span>Free · privacy-first · no accounts</span>
+        <a href="/">Home</a>
+        <a href="/privacy">Usage &amp; privacy</a>
+        <span>Made by <a href="https://xexio.dev" target="_blank" rel="noopener noreferrer">xexio.dev</a></span>
+      </footer>
+    </main>
+  </body>
+</html>

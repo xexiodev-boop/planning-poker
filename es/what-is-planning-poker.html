@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href="https://pointtaken.team/es/what-is-planning-poker" />
+    <link rel="alternate" hreflang="en" href="https://pointtaken.team/what-is-planning-poker" />
+    <link rel="alternate" hreflang="es" href="https://pointtaken.team/es/what-is-planning-poker" />
+    <link rel="alternate" hreflang="x-default" href="https://pointtaken.team/what-is-planning-poker" />
+    <meta name="theme-color" content="#1c6b4d" />
+    <meta
+      name="description"
+      content="Planning poker (o Scrum poker) explicado: cómo funciona el juego de estimación, por qué se usan números de Fibonacci, puntos de historia frente a horas y cómo dirigir una sesión con tu equipo. Incluye una herramienta gratuita para probarlo."
+    />
+    <link rel="stylesheet" href="/src/styles.css" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Point Taken" />
+    <meta property="og:url" content="https://pointtaken.team/es/what-is-planning-poker" />
+    <meta property="og:title" content="¿Qué es planning poker? Estimación ágil, explicada" />
+    <meta
+      property="og:description"
+      content="Cómo funciona planning poker, por qué las cartas usan números de Fibonacci y cómo dirigir una sesión con tu equipo."
+    />
+    <meta property="og:image" content="https://pointtaken.team/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Point Taken — planning poker sin ceremonia" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="¿Qué es planning poker? Estimación ágil, explicada" />
+    <meta
+      name="twitter:description"
+      content="Cómo funciona planning poker, por qué las cartas usan números de Fibonacci y cómo dirigir una sesión con tu equipo."
+    />
+    <meta name="twitter:image" content="https://pointtaken.team/og-image.png" />
+
+    <!-- Rich result hints: el artículo y su sección de preguntas frecuentes.
+         Las respuestas deben coincidir con el texto visible de abajo. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Article",
+            "headline": "¿Qué es planning poker?",
+            "description": "Planning poker (o Scrum poker) explicado: cómo funciona el juego de estimación, por qué se usan números de Fibonacci y cómo dirigir una sesión.",
+            "url": "https://pointtaken.team/es/what-is-planning-poker",
+            "inLanguage": "es",
+            "datePublished": "2026-07-07",
+            "dateModified": "2026-07-07",
+            "author": { "@type": "Person", "name": "xexio.dev", "url": "https://xexio.dev" },
+            "publisher": { "@type": "Organization", "name": "Point Taken", "url": "https://pointtaken.team/" }
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "¿Planning poker es solo para equipos Scrum?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "No. Nace del mundo Scrum y XP, pero cualquier equipo que necesite dimensionar el trabajo antes de comprometerse puede usarlo: equipos Kanban, equipos de soporte que reparten proyectos, incluso grupos que no hacen software."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "¿Cuánta gente debería participar?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Debería votar todo el que vaya a construir el trabajo, normalmente entre tres y diez personas. Los interesados pueden mirar como observadores, pero las estimaciones pertenecen a quienes hacen el trabajo."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "¿Funciona planning poker en equipos remotos?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Sí. Las salas de planning poker online sustituyen a la baraja física: cada persona vota en privado desde su dispositivo y las cartas se revelan a la vez, exactamente igual que alrededor de una mesa."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "¿Y si el equipo nunca converge en un número?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Tras dos o tres rondas, o bien tomad la estimación más alta y seguid adelante, o bien tratad el desacuerdo como una señal: la historia probablemente es demasiado grande o está demasiado difusa, y conviene dividirla o aclararla antes de que alguien trabaje en ella."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "¿Las estimaciones son compromisos?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "No. Las estimaciones son pronósticos hechos con la información disponible en ese momento. Ayudan a planificar un sprint y a detectar riesgos pronto. No son fechas de entrega, y tratarlas como tales enseña rápidamente a la gente a inflarlas."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+
+    <title>¿Qué es planning poker? Estimación ágil, explicada | Point Taken</title>
+  </head>
+  <body>
+    <main class="legal-shell">
+      <header class="legal-header">
+        <a class="brand" href="/">
+          <span class="brand-mark">P</span>
+          <span>Point Taken</span>
+        </a>
+        <nav>
+          <a class="text-button" href="/what-is-planning-poker" hreflang="en" lang="en">In English</a>
+          <a class="text-button" href="/">← Volver al inicio</a>
+        </nav>
+      </header>
+
+      <article class="legal-article">
+        <p class="eyebrow">Estimación ágil, explicada</p>
+        <h1>¿Qué es planning poker?</h1>
+        <p class="legal-lede">
+          Planning poker, también llamado Scrum poker, es una técnica de estimación por consenso
+          que usan los equipos ágiles. Cada persona elige en privado una carta con un número,
+          todas las cartas se revelan a la vez y las diferencias entre ellas abren la conversación
+          que de verdad importa.
+        </p>
+        <p class="legal-meta">Última actualización: 7 de julio de 2026</p>
+
+        <aside class="inline-cta">
+          <p>¿Necesitas una sala ahora mismo? Es gratis y sin registro.</p>
+          <a class="primary-button compact" href="/">Crear una sala</a>
+        </aside>
+
+        <section>
+          <h2>La versión corta</h2>
+          <ul>
+            <li>Cada estimador tiene una baraja de cartas con números, normalmente una secuencia tipo Fibonacci.</li>
+            <li>El equipo comenta un elemento de trabajo y después cada persona elige una carta <em>en privado</em>.</li>
+            <li>Todas las cartas se revelan a la vez, así nadie se ancla a la voz más alta ni a la más veterana.</li>
+            <li>Si las estimaciones coinciden, se registran. Que no coincidan no es un problema; es justo la gracia. Los extremos explican su razonamiento y el equipo vota de nuevo.</li>
+            <li>Solo hace falta una baraja y tu equipo, o una sala online gratuita si trabajáis en remoto.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>De dónde viene</h2>
+          <p>
+            James Grenning describió planning poker en 2002 y Mike Cohn lo popularizó con su libro
+            <em>Agile Estimating and Planning</em>. Es un descendiente ligero de Wideband Delphi,
+            un método de estimación construido sobre una observación sencilla: un grupo de
+            profesionales que estima de forma independiente y luego lo discute produce mejores
+            pronósticos que cualquier experto en solitario, y mucho mejores que un grupo que estima
+            en voz alta, donde el primer número dicho arrastra a todos los demás.
+          </p>
+        </section>
+
+        <section>
+          <h2>Cómo funciona una sesión</h2>
+          <ol>
+            <li>El facilitador trae la lista de elementos a estimar: historias de usuario, funcionalidades, tareas.</li>
+            <li>Alguien que conoce el elemento (a menudo el product owner) lo presenta brevemente y el equipo hace preguntas.</li>
+            <li>Cada estimador elige una carta, boca abajo. Nadie ve la elección de los demás.</li>
+            <li>Todas las cartas se revelan a la vez.</li>
+            <li>Si los números coinciden, se registra la estimación y se pasa al siguiente. Si no, las personas con la estimación más alta y más baja explican su razonamiento y el equipo vota otra vez.</li>
+            <li>La mayoría de los elementos convergen en una o dos rondas. Si uno no lo hace, ese desacuerdo es información útil (más abajo lo vemos).</li>
+          </ol>
+          <p>
+            Rara vez hace falta estimar todo el backlog de una sentada. Poned un límite de tiempo a
+            la sesión, dedicad unos pocos minutos a cada elemento y aparcad cualquier cosa que se
+            convierta en un debate de diseño.
+          </p>
+        </section>
+
+        <section>
+          <h2>Por qué importa revelar a la vez</h2>
+          <p>
+            La mecánica de las cartas no es un truco. Neutraliza dos fuerzas que arruinan en
+            silencio las estimaciones hechas en voz alta:
+          </p>
+          <ul>
+            <li>
+              <strong>El anclaje.</strong> En cuanto alguien dice &laquo;eso es más o menos un
+              cinco&raquo;, todas las estimaciones posteriores gravitan hacia el cinco. Votar en
+              privado hace que cada estimación se forme de manera independiente.
+            </li>
+            <li>
+              <strong>La jerarquía.</strong> Cuando el líder técnico habla primero, llevarle la
+              contraria tiene un coste social. Cuando las cartas se giran a la vez, el 13 de la
+              persona más junior pesa lo mismo que el 5 de todos los demás, y obliga a hacerse la
+              pregunta que importa: <em>¿qué sabe ella que nosotros no sepamos?</em>
+            </li>
+          </ul>
+          <p>
+            Esa pregunta es el verdadero resultado de planning poker. Una dispersión de
+            estimaciones casi siempre significa que cada uno está imaginando un trabajo distinto:
+            una persona daba por hecho que la API antigua se podía reutilizar; otra sabía que hay
+            que reescribirla. La estimación es solo la excusa para sacar a la luz esas suposiciones
+            antes de que empiece el sprint, y no dos semanas después.
+          </p>
+        </section>
+
+        <section>
+          <h2>Por qué las cartas usan números de Fibonacci</h2>
+          <p>
+            La mayoría de las barajas usan una secuencia tipo Fibonacci (1, 2, 3, 5, 8, 13, 21) en
+            lugar de todos los enteros. Los huecos crecientes son deliberados: distinguir un 2 de
+            un 3 se nos da razonablemente bien, pero nadie distingue con sentido un 12 de un 13.
+            Cuanto más grande es el trabajo, mayor es la incertidumbre, y la secuencia obliga a esa
+            honestidad. No puedes esconderte tras una precisión falsa; tienes que elegir entre el 8
+            y el 13.
+          </p>
+          <p>
+            Entre las variantes habituales están las tallas de camiseta (de XS a XL) para
+            dimensionar a grandes rasgos en fases tempranas y las potencias de dos (1, 2, 4, 8,
+            16). Casi todas las barajas incluyen además una carta <code>?</code> (&laquo;no puedo
+            estimar esto sin más información&raquo;) y una carta de café (&laquo;necesitamos un
+            descanso&raquo;). Cuando aparecen, conviene tomarse ambas en serio.
+          </p>
+        </section>
+
+        <section>
+          <h2>Puntos de historia, no horas</h2>
+          <p>
+            Las estimaciones de planning poker suelen ser <strong>puntos de historia</strong>:
+            medidas relativas de tamaño, complejidad e incertidumbre, no unidades de tiempo. Una
+            historia de 5 puntos es más o menos tan grande como otras historias de 5 puntos que el
+            equipo ya ha hecho; eso es todo lo que afirma un punto. Al cabo de unos sprints, la
+            velocidad medida del equipo convierte los puntos en un pronóstico de calendario con
+            mucha más fiabilidad que sumar horas a ojo. Las horas invitan a una precisión falsa,
+            varían según quién coja la tarea y acaban comparándose con los partes de horas, momento
+            en el que la gente deja de estimar y empieza a negociar.
+          </p>
+        </section>
+
+        <section>
+          <h2>Preguntas frecuentes</h2>
+
+          <h3>¿Planning poker es solo para equipos Scrum?</h3>
+          <p>
+            No. Nace del mundo Scrum y XP, pero cualquier equipo que necesite dimensionar el
+            trabajo antes de comprometerse puede usarlo: equipos Kanban, equipos de soporte que
+            reparten proyectos, incluso grupos que no hacen software.
+          </p>
+
+          <h3>¿Cuánta gente debería participar?</h3>
+          <p>
+            Debería votar todo el que vaya a construir el trabajo, normalmente entre tres y diez
+            personas. Los interesados pueden mirar como observadores, pero las estimaciones
+            pertenecen a quienes hacen el trabajo.
+          </p>
+
+          <h3>¿Funciona planning poker en equipos remotos?</h3>
+          <p>
+            Sí. Las salas de planning poker online sustituyen a la baraja física: cada persona vota
+            en privado desde su dispositivo y las cartas se revelan a la vez, exactamente igual que
+            alrededor de una mesa.
+          </p>
+
+          <h3>¿Y si el equipo nunca converge en un número?</h3>
+          <p>
+            Tras dos o tres rondas, o bien tomad la estimación más alta y seguid adelante, o bien
+            tratad el desacuerdo como una señal: la historia probablemente es demasiado grande o
+            está demasiado difusa, y conviene dividirla o aclararla antes de que alguien trabaje en
+            ella.
+          </p>
+
+          <h3>¿Las estimaciones son compromisos?</h3>
+          <p>
+            No. Las estimaciones son pronósticos hechos con la información disponible en ese
+            momento. Ayudan a planificar un sprint y a detectar riesgos pronto. No son fechas de
+            entrega, y tratarlas como tales enseña rápidamente a la gente a inflarlas.
+          </p>
+        </section>
+
+        <section>
+          <h2>Pruébalo con tu equipo</h2>
+          <p>
+            Point Taken es una sala de planning poker gratuita hecha exactamente para esto:
+            votación en vivo, cartas que permanecen ocultas hasta revelarse y nada entre tu equipo
+            y una estimación. Sin registro, sin anuncios, sin rastreo. Abre una sala, comparte el
+            enlace y empezad con el siguiente elemento de vuestro backlog.
+          </p>
+          <a class="primary-button" href="/">Crear una sala gratis</a>
+        </section>
+      </article>
+
+      <footer class="legal-footer">
+        <span>Gratis · privacidad ante todo · sin cuentas</span>
+        <a href="/">Inicio</a>
+        <a href="/privacy">Uso y privacidad</a>
+        <span>Hecho por <a href="https://xexio.dev" target="_blank" rel="noopener noreferrer">xexio.dev</a></span>
+      </footer>
+    </main>
+  </body>
+</html>

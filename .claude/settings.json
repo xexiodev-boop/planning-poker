@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(npm run extract)",
+      "PowerShell(npm install)",
+      "PowerShell(Get-Process -Name node,workerd -ErrorAction SilentlyContinue)",
+      "PowerShell(npm run check)",
+      "PowerShell(npm run preview)",
+      "PowerShell(git add index.html public/sitemap.xml src/components/HomePage.jsx src/main.jsx src/styles.css src/lib/canonical.js src/locales vite.config.js what-is-planning-poker.html)"
+    ]
+  }
+}
