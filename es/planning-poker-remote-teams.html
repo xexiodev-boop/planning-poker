@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href="https://pointtaken.team/es/planning-poker-remote-teams" />
+    <link rel="alternate" hreflang="en" href="https://pointtaken.team/planning-poker-remote-teams" />
+    <link rel="alternate" hreflang="es" href="https://pointtaken.team/es/planning-poker-remote-teams" />
+    <link rel="alternate" hreflang="x-default" href="https://pointtaken.team/planning-poker-remote-teams" />
+    <meta name="theme-color" content="#1c6b4d" />
+    <meta
+      name="description"
+      content="Cómo dirigir una sesión de planning poker con un equipo remoto o distribuido: los fallos que arruinan la estimación por videollamada, una guía paso a paso y una sala online gratuita con revelado simultáneo."
+    />
+    <link rel="stylesheet" href="/src/styles.css" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Point Taken" />
+    <meta property="og:url" content="https://pointtaken.team/es/planning-poker-remote-teams" />
+    <meta property="og:title" content="Planning poker para equipos remotos: cómo hacerlo online" />
+    <meta
+      property="og:description"
+      content="Los fallos que evitar en las videollamadas, una guía paso a paso de la sesión remota y cómo una sala online sustituye a la baraja física."
+    />
+    <meta property="og:image" content="https://pointtaken.team/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Point Taken — planning poker sin ceremonia" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Planning poker para equipos remotos: cómo hacerlo online" />
+    <meta
+      name="twitter:description"
+      content="Los fallos que evitar en las videollamadas, una guía paso a paso de la sesión remota y cómo una sala online sustituye a la baraja física."
+    />
+    <meta name="twitter:image" content="https://pointtaken.team/og-image.png" />
+
+    <!-- Rich result hints: el artículo y su sección de preguntas frecuentes.
+         Las respuestas deben coincidir con el texto visible de abajo. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Article",
+            "headline": "Planning poker para equipos remotos",
+            "description": "Cómo dirigir una sesión de planning poker con un equipo remoto o distribuido: los fallos que evitar en las videollamadas, una guía paso a paso y cómo una sala online sustituye a la baraja física.",
+            "url": "https://pointtaken.team/es/planning-poker-remote-teams",
+            "inLanguage": "es",
+            "datePublished": "2026-07-19",
+            "dateModified": "2026-07-19",
+            "author": { "@type": "Person", "name": "xexio.dev", "url": "https://xexio.dev" },
+            "publisher": { "@type": "Organization", "name": "Point Taken", "url": "https://pointtaken.team/" }
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "¿Hace falta una herramienta especial para el planning poker remoto?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Hace falta algo que oculte los votos hasta que todos hayan elegido y luego los revele a la vez. Una hoja de cálculo o un chat compartido no pueden hacerlo, porque el primer número que se publica ancla a todos los demás. Una sala online dedicada se encarga del voto privado y del revelado simultáneo, que es justo el sentido de la técnica."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "¿Deberían estar las cámaras encendidas durante la estimación remota?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Las cámaras ayudan a leer las dudas y la confusión que una llamada de solo voz oculta, así que vale la pena mantenerlas encendidas durante la conversación. No hacen falta para votar, eso sí. La estimación sale de las cartas, no de las caras, así que nadie sale perjudicado por apagar la cámara."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "¿Se puede hacer planning poker de forma asíncrona?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Puedes recoger los votos de la primera ronda de forma asíncrona, pero el valor del planning poker está en la conversación que abre una dispersión de estimaciones. Esa conversación es difícil de tener bien en comentarios repartidos entre husos horarios. Prepara y refina los elementos en asíncrono y luego estimad en directo, aunque sea en una llamada corta y enfocada."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "¿Cómo se evita que una sesión remota se alargue?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Poned un límite de tiempo de unos minutos por elemento, estimad de uno en uno y dejad que las cartas se revelen en cuanto todos hayan confirmado en lugar de esperar a una sola persona. Un temporizador de revelado y el revelado automático eliminan los parones más repetitivos, y cualquier cosa que se convierta en un debate de diseño conviene aparcarla, no estimarla."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "¿Y los equipos distribuidos entre husos horarios?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Buscad una hora de solapamiento y protegedla para la estimación, porque un revelado en directo vale más que un horario perfectamente cómodo. Haced sesiones cortas y frecuentes en lugar de largas y esporádicas, y usad un refinamiento del backlog en asíncrono antes para que el tiempo en directo se dedique a votar, no a leer."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+
+    <title>Planning poker para equipos remotos: cómo hacerlo online | Point Taken</title>
+  </head>
+  <body>
+    <main class="legal-shell">
+      <header class="legal-header">
+        <a class="brand" href="/">
+          <span class="brand-mark">P</span>
+          <span>Point Taken</span>
+        </a>
+        <nav>
+          <a class="text-button" href="/planning-poker-remote-teams" hreflang="en" lang="en">In English</a>
+          <a class="text-button" href="/">← Volver al inicio</a>
+        </nav>
+      </header>
+
+      <article class="legal-article">
+        <p class="eyebrow">Estimación ágil, explicada</p>
+        <h1>Planning poker para equipos remotos</h1>
+        <p class="legal-lede">
+          El trabajo en remoto es donde el planning poker se gana el sueldo. La técnica se creó para
+          evitar que la voz más alta de la sala fije la estimación, y una videollamada empeora ese
+          problema en vez de arreglarlo. Bien hecha, una sala online le da a un equipo distribuido el
+          mismo revelado simultáneo y honesto que tendrías alrededor de una mesa, pero sin la mesa.
+        </p>
+        <p class="legal-meta">Última actualización: 19 de julio de 2026</p>
+
+        <aside class="inline-cta">
+          <p>¿Estimando con un equipo remoto ahora mismo? Es gratis y sin registro.</p>
+          <a class="primary-button compact" href="/">Crear una sala</a>
+        </aside>
+
+        <section>
+          <p>
+            ¿Nuevo en la técnica? Empieza por
+            <a href="/es/what-is-planning-poker">qué es planning poker</a> para los fundamentos y
+            vuelve luego aquí para ver cómo llevarlo a cabo con un equipo que no está en la misma sala.
+          </p>
+        </section>
+
+        <section>
+          <h2>Por qué estimar por videollamada se rompe en silencio</h2>
+          <p>
+            Una videollamada amplifica justo las fuerzas que el planning poker existe para neutralizar:
+          </p>
+          <ul>
+            <li>
+              <strong>El anclaje empeora.</strong> En una llamada suele hablar una sola persona a la
+              vez, así que la primera estimación que se dice cae con aún más peso. El resto se ajusta
+              hacia ella en lugar de formarse una opinión independiente.
+            </li>
+            <li>
+              <strong>Los turnos ocultan el desacuerdo.</strong> Interrumpir con educación por vídeo es
+              difícil, así que las personas más calladas simplemente asienten para no frenar. Sus
+              dudas, que a menudo son la señal más valiosa, nunca salen a la luz.
+            </li>
+            <li>
+              <strong>La atención se escapa.</strong> Alguien en silencio y con la cámara apagada
+              leyendo el correo es invisible. Cuando la sesión es una ronda de conversación abierta, es
+              fácil desconectar y validar lo que sea que decida el grupo.
+            </li>
+          </ul>
+          <p>
+            Un voto privado seguido de un revelado simultáneo arregla las tres cosas a la vez. Cada
+            persona tiene que comprometerse con un número antes de ver el de nadie, así que no hay nada
+            a lo que anclarse, ni forma de abstenerse en silencio, y cada desacuerdo se hace visible en
+            cuanto se giran las cartas.
+          </p>
+        </section>
+
+        <section>
+          <h2>Qué sustituye una sala online</h2>
+          <p>
+            En una sesión presencial, la baraja hace el trabajo: cada persona sostiene su elección boca
+            abajo y luego la giran a la vez. Una sala de planning poker online sustituye a esa baraja, y
+            solo a esa baraja. Todo el mundo sigue necesitando estar hablando, ya sea por videollamada,
+            por un canal de voz o con dos oficinas en la misma línea. La sala se encarga de la parte que
+            una llamada no puede: mantener cada voto oculto hasta el revelado y luego mostrar todas las
+            cartas en el mismo instante.
+          </p>
+          <p>
+            Esa es la función que hay que exigir. Una hoja de cálculo o un hilo de chat no pueden ocultar
+            el primer número, y en cuanto es visible la estimación ya está contaminada. Si una
+            herramienta revela los votos según llegan, no es planning poker; es una encuesta con pasos
+            de más.
+          </p>
+        </section>
+
+        <section>
+          <h2>Cómo dirigir una sesión remota</h2>
+          <ol>
+            <li>
+              <strong>Refina el backlog antes de la llamada.</strong> Añade los elementos a estimar con
+              antelación para que la sesión en directo se dedique a votar, no a leer. Una cola de
+              elementos compartida mantiene la sesión en marcha de uno al siguiente sin buscar el
+              próximo ticket.
+            </li>
+            <li>
+              <strong>Reúne a todos en la misma sala.</strong> Comparte un enlace. Quien facilite abre
+              la sala y cada estimador entra desde su dispositivo. Los observadores, como un product
+              owner o un interesado que mira, entran también pero se quedan fuera de la votación.
+            </li>
+            <li>
+              <strong>Presenta un elemento, brevemente.</strong> Alguien que conozca el elemento lo
+              explica en una o dos frases y el equipo hace preguntas. Que sea corto; esto no es la
+              reunión de diseño.
+            </li>
+            <li>
+              <strong>Todos votan en privado.</strong> Cada persona elige una carta. Nadie ve la de los
+              demás, y nadie sabe quién ha votado y quién no más allá de un simple indicador de
+              confirmado.
+            </li>
+            <li>
+              <strong>Revelad a la vez.</strong> En cuanto todos han confirmado, las cartas se giran a la
+              vez. Si los números coinciden, registrad la estimación y seguid. Si no, las personas con la
+              estimación más alta y más baja explican su razonamiento y se vota otra vez.
+            </li>
+            <li>
+              <strong>Pasad al siguiente elemento.</strong> La mayoría se resuelven en una o dos rondas.
+              Coged el siguiente de la cola y repetid.
+            </li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>Cómo mantener ágil una sesión remota</h2>
+          <p>
+            El fallo de la estimación remota no son las malas estimaciones; es una sesión que se alarga
+            hasta que la gente desconecta. Unos pocos hábitos la mantienen apretada:
+          </p>
+          <ul>
+            <li>
+              <strong>Pon un límite de tiempo a la conversación.</strong> Un par de minutos por elemento
+              es de sobra. Cualquier cosa que se convierta en un debate de diseño se aparca y se lleva
+              aparte, no se estima en el momento.
+            </li>
+            <li>
+              <strong>Deja que el revelado ocurra solo.</strong> Esperar a que el facilitador pulse
+              revelar cuando todos ya han votado es tiempo muerto puro. El revelado automático gira las
+              cartas en cuanto confirma la última persona.
+            </li>
+            <li>
+              <strong>Usa un temporizador de revelado corto cuando la conversación es el objetivo.</strong>
+              Un breve retraso antes de poder mostrar las cartas le da a cada uno un momento para pensar
+              de verdad, en lugar de copiar a la primera persona que vota.
+            </li>
+            <li>
+              <strong>No votéis en bucle.</strong> Tras dos o tres rondas sin converger, o bien tomad el
+              número más alto y seguid, o bien tratad el desacuerdo como una señal de que el elemento
+              hay que dividirlo o aclararlo antes de que alguien trabaje en él.
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>¿En directo o en asíncrono?</h2>
+          <p>
+            Puedes recoger una primera ronda de votos de forma asíncrona, y para un backlog pequeño y
+            bien entendido a veces basta. Pero la estimación no es el verdadero resultado del planning
+            poker; lo es la conversación que abre una dispersión de estimaciones. Esa conversación es
+            difícil de tener bien en comentarios repartidos a lo largo de un día y varios husos horarios,
+            donde se pierde el tono y las respuestas llegan con horas de diferencia.
+          </p>
+          <p>
+            El patrón fiable para equipos distribuidos es repartir el trabajo: refinar y aclarar los
+            elementos en asíncrono y luego estimar en directo en una sesión corta y enfocada. Aunque sean
+            treinta minutos de solapamiento real, ganan a un día de idas y venidas en un hilo, porque los
+            desacuerdos se resuelven mientras todos están presentes para resolverlos.
+          </p>
+        </section>
+
+        <section>
+          <h2>Preguntas frecuentes</h2>
+
+          <h3>¿Hace falta una herramienta especial para el planning poker remoto?</h3>
+          <p>
+            Hace falta algo que oculte los votos hasta que todos hayan elegido y luego los revele a la
+            vez. Una hoja de cálculo o un chat compartido no pueden hacerlo, porque el primer número que
+            se publica ancla a todos los demás. Una sala online dedicada se encarga del voto privado y
+            del revelado simultáneo, que es justo el sentido de la técnica.
+          </p>
+
+          <h3>¿Deberían estar las cámaras encendidas durante la estimación remota?</h3>
+          <p>
+            Las cámaras ayudan a leer las dudas y la confusión que una llamada de solo voz oculta, así
+            que vale la pena mantenerlas encendidas durante la conversación. No hacen falta para votar,
+            eso sí. La estimación sale de las cartas, no de las caras, así que nadie sale perjudicado por
+            apagar la cámara.
+          </p>
+
+          <h3>¿Se puede hacer planning poker de forma asíncrona?</h3>
+          <p>
+            Puedes recoger los votos de la primera ronda de forma asíncrona, pero el valor del planning
+            poker está en la conversación que abre una dispersión de estimaciones. Esa conversación es
+            difícil de tener bien en comentarios repartidos entre husos horarios. Prepara y refina los
+            elementos en asíncrono y luego estimad en directo, aunque sea en una llamada corta y enfocada.
+          </p>
+
+          <h3>¿Cómo se evita que una sesión remota se alargue?</h3>
+          <p>
+            Poned un límite de tiempo de unos minutos por elemento, estimad de uno en uno y dejad que las
+            cartas se revelen en cuanto todos hayan confirmado en lugar de esperar a una sola persona. Un
+            temporizador de revelado y el revelado automático eliminan los parones más repetitivos, y
+            cualquier cosa que se convierta en un debate de diseño conviene aparcarla, no estimarla.
+          </p>
+
+          <h3>¿Y los equipos distribuidos entre husos horarios?</h3>
+          <p>
+            Buscad una hora de solapamiento y protegedla para la estimación, porque un revelado en directo
+            vale más que un horario perfectamente cómodo. Haced sesiones cortas y frecuentes en lugar de
+            largas y esporádicas, y usad un refinamiento del backlog en asíncrono antes para que el tiempo
+            en directo se dedique a votar, no a leer.
+          </p>
+        </section>
+
+        <section>
+          <h2>Pruébalo con tu equipo remoto</h2>
+          <p>
+            Point Taken es una sala de planning poker gratuita hecha exactamente para esto: votación en
+            vivo, cartas que permanecen ocultas hasta revelarse, un temporizador de revelado y revelado
+            automático opcionales para mantener el ritmo, y nada entre tu equipo y una estimación. Sin
+            registro, sin anuncios, sin rastreo. Abre una sala, comparte el enlace y empezad con el
+            siguiente elemento de vuestro backlog.
+          </p>
+          <a class="primary-button" href="/">Crear una sala gratis</a>
+        </section>
+      </article>
+
+      <footer class="legal-footer">
+        <span>Gratis · privacidad ante todo · sin cuentas</span>
+        <a href="/">Inicio</a>
+        <a href="/es/what-is-planning-poker">¿Qué es planning poker?</a>
+        <a href="/es/how-to-run-planning-poker">Dirige una sesión</a>
+        <a href="/privacy">Uso y privacidad</a>
+        <span>Hecho por <a href="https://xexio.dev" target="_blank" rel="noopener noreferrer">xexio.dev</a></span>
+      </footer>
+    </main>
+  </body>
+</html>

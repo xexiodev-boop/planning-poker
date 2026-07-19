@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href="https://pointtaken.team/how-to-run-planning-poker" />
+    <link rel="alternate" hreflang="en" href="https://pointtaken.team/how-to-run-planning-poker" />
+    <link rel="alternate" hreflang="es" href="https://pointtaken.team/es/how-to-run-planning-poker" />
+    <link rel="alternate" hreflang="x-default" href="https://pointtaken.team/how-to-run-planning-poker" />
+    <meta name="theme-color" content="#1c6b4d" />
+    <meta
+      name="description"
+      content="A facilitator's guide to running a planning poker session: how to prepare the backlog, set up the room, run each round, handle disagreement, and keep the estimation moving. Includes a free tool to run it in."
+    />
+    <link rel="stylesheet" href="/src/styles.css" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Point Taken" />
+    <meta property="og:url" content="https://pointtaken.team/how-to-run-planning-poker" />
+    <meta property="og:title" content="How to Run a Planning Poker Session: A Facilitator's Guide" />
+    <meta
+      property="og:description"
+      content="How to prepare, set up the room, run each round, handle disagreement, and keep a planning poker session moving."
+    />
+    <meta property="og:image" content="https://pointtaken.team/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Point Taken — planning poker without the ceremony" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="How to Run a Planning Poker Session: A Facilitator's Guide" />
+    <meta
+      name="twitter:description"
+      content="How to prepare, set up the room, run each round, handle disagreement, and keep a planning poker session moving."
+    />
+    <meta name="twitter:image" content="https://pointtaken.team/og-image.png" />
+
+    <!-- Rich result hints: the article itself plus its FAQ section. Answers
+         must stay in sync with the visible FAQ text below. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Article",
+            "headline": "How to run a planning poker session",
+            "description": "A facilitator's guide to running a planning poker session: how to prepare the backlog, set up the room, run each round, handle disagreement, and keep the estimation moving.",
+            "url": "https://pointtaken.team/how-to-run-planning-poker",
+            "inLanguage": "en",
+            "datePublished": "2026-07-19",
+            "dateModified": "2026-07-19",
+            "author": { "@type": "Person", "name": "xexio.dev", "url": "https://xexio.dev" },
+            "publisher": { "@type": "Organization", "name": "Point Taken", "url": "https://pointtaken.team/" }
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Who should facilitate a planning poker session?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Usually the scrum master or team lead, but it does not have to be a fixed role. The facilitator runs the process rather than the estimates: they present items, keep discussion timeboxed, and call the reveal. They should not push the team toward a particular number."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How long should a planning poker session last?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Keep it to sixty to ninety minutes at most. Attention fades after that, and estimates made by a tired team are worse, not more thorough. If the backlog is large, run shorter sessions more often rather than one long marathon."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How many items can you estimate in one session?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "With discussion timeboxed to a few minutes each, a team can usually estimate ten to twenty items in an hour. Well-refined items that the team already understands go faster; vague ones eat the clock and are a signal to refine before estimating, not during."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What do you do when the team can't agree on an estimate?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Have the highest and lowest estimators explain their reasoning, then vote again. Most items converge within two or three rounds. If one does not, either take the higher number and move on, or treat the persistent spread as a sign the item is too big or too vague and should be split or clarified first."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Should the product owner vote?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "No. The people who will build the work do the estimating, because size and complexity are theirs to judge. The product owner presents the item and answers questions, then watches as an observer. Their job is to clarify scope, not to influence the number."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+
+    <title>How to Run a Planning Poker Session: A Facilitator's Guide | Point Taken</title>
+  </head>
+  <body>
+    <main class="legal-shell">
+      <header class="legal-header">
+        <a class="brand" href="/">
+          <span class="brand-mark">P</span>
+          <span>Point Taken</span>
+        </a>
+        <nav>
+          <a class="text-button" href="/es/how-to-run-planning-poker" hreflang="es" lang="es">Español</a>
+          <a class="text-button" href="/">← Back to home</a>
+        </nav>
+      </header>
+
+      <article class="legal-article">
+        <p class="eyebrow">Agile estimation, explained</p>
+        <h1>How to run a planning poker session</h1>
+        <p class="legal-lede">
+          A good planning poker session is mostly good facilitation. The mechanics are simple:
+          present an item, everyone votes, cards flip, discuss, repeat. What makes the difference is
+          how you prepare, how you handle disagreement, and how ruthlessly you keep the session
+          moving. This is the facilitator's guide.
+        </p>
+        <p class="legal-meta">Last updated: 19 July 2026</p>
+
+        <aside class="inline-cta">
+          <p>Running a session today? It's always free, with no sign-up.</p>
+          <a class="primary-button compact" href="/">Create a room</a>
+        </aside>
+
+        <section>
+          <p>
+            If you are new to the technique, read
+            <a href="/what-is-planning-poker">what is planning poker</a> first. If your team is
+            distributed, pair this with the guide to
+            <a href="/planning-poker-remote-teams">planning poker for remote teams</a>. This page
+            assumes you know the basics and want to run a session well.
+          </p>
+        </section>
+
+        <section>
+          <h2>Before the session</h2>
+          <p>
+            Most sessions that run long were lost before they started. The prep is short but it
+            matters:
+          </p>
+          <ul>
+            <li>
+              <strong>Refine the backlog first.</strong> Estimation is not the place to discover that
+              an item has no acceptance criteria. Items should be clear enough that the team can size
+              them after a sentence or two of context. Anything that still needs designing is not
+              ready to estimate.
+            </li>
+            <li>
+              <strong>Queue the items in advance.</strong> Decide which items you are estimating and
+              in what order, so the session flows from one to the next instead of stalling while
+              everyone hunts for the next ticket.
+            </li>
+            <li>
+              <strong>Decide who votes.</strong> The people who will build the work estimate it.
+              Stakeholders and the product owner attend as observers to give context, not to vote.
+            </li>
+            <li>
+              <strong>Pick the deck.</strong> A Fibonacci-like sequence is the common default. Agree on
+              the scale before you start so nobody is quietly using a different one.
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Setting up the room</h2>
+          <p>
+            Whether you are around a table or in an online room, three roles keep a session clean:
+          </p>
+          <ul>
+            <li>
+              <strong>The facilitator</strong> runs the process. They present items, keep discussion
+              timeboxed, call the reveal, and record the agreed estimate. Crucially, they run the
+              process, not the estimates: a facilitator who argues for a number has stopped
+              facilitating.
+            </li>
+            <li>
+              <strong>The voters</strong> are everyone who will do the work. Each holds the deck and
+              votes on every item.
+            </li>
+            <li>
+              <strong>The observers</strong> are the product owner and any stakeholders. They present
+              items and answer questions, then sit out the vote so they don't anchor it.
+            </li>
+          </ul>
+          <p>
+            In an online room, set these roles up front. Marking the product owner as an observer, for
+            example, keeps them in the conversation without their card weighing on the result.
+          </p>
+        </section>
+
+        <section>
+          <h2>Running a round</h2>
+          <ol>
+            <li>
+              <strong>Present the item.</strong> Someone who knows it, usually the product owner,
+              explains it in a sentence or two. The team asks clarifying questions. Keep this short.
+            </li>
+            <li>
+              <strong>Everyone votes privately.</strong> Each voter picks a card without seeing the
+              others. A short delay before the reveal is unlocked gives people a moment to actually
+              think rather than copy the first vote in.
+            </li>
+            <li>
+              <strong>Reveal together.</strong> All cards flip at once. Letting the reveal happen
+              automatically once everyone has confirmed removes a repetitive click and a beat of dead
+              time.
+            </li>
+            <li>
+              <strong>Read the spread.</strong> If the numbers agree, record the estimate and move on.
+              If they don't, that gap is the point of the exercise.
+            </li>
+            <li>
+              <strong>Discuss and re-vote.</strong> The highest and lowest estimators explain their
+              reasoning, the team absorbs it, and everyone votes again.
+            </li>
+            <li>
+              <strong>Finalize.</strong> Record the agreed number and pull the next item from the
+              queue.
+            </li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>Handling disagreement</h2>
+          <p>
+            A spread of estimates is not a failure of the session; it is the reason the session
+            exists. It almost always means people are imagining different work. One person assumed an
+            existing component could be reused; another knew it has to be rebuilt. Surfacing that gap
+            before the sprint is worth far more than the number itself.
+          </p>
+          <p>
+            The move is always the same: the outliers explain, the team learns something, and you
+            vote again. But don't let a single item become a black hole. After two or three rounds
+            without convergence, either take the higher estimate and move on, or treat the stubborn
+            disagreement as a signal: the item is probably too large or too vaguely defined, and
+            should be split or clarified before anyone commits to it.
+          </p>
+        </section>
+
+        <section>
+          <h2>The special cards</h2>
+          <p>
+            Most decks carry two cards that aren't numbers, and both are worth taking seriously when
+            they appear:
+          </p>
+          <ul>
+            <li>
+              <strong>The question mark</strong> means "I can't estimate this without more
+              information." Several of them on one item is a clear sign it needs refining, not
+              estimating. Send it back.
+            </li>
+            <li>
+              <strong>The coffee cup</strong> means "I need a break." A session past the hour mark
+              produces worse estimates, not more of them. Take the break.
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Keeping the pace</h2>
+          <p>
+            The most common way a session fails is not bad estimates; it is losing the room to a
+            session that drags. A few rules protect it:
+          </p>
+          <ul>
+            <li>Timebox discussion per item to a few minutes, and park anything that turns into a design debate.</li>
+            <li>Estimate one item at a time so the team's attention has a single focus.</li>
+            <li>Keep the whole session to sixty to ninety minutes; split a large backlog across several shorter sessions.</li>
+            <li>Don't re-litigate finalized items. Once a number is recorded, move on.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>After the session</h2>
+          <p>
+            The estimates you just made are <strong>story points</strong>: relative sizes, not hours
+            and not deadlines. Over a few sprints, the team's measured velocity turns those points
+            into a calendar forecast far more reliably than any up-front hour guess. Resist the pull
+            to convert points to hours or to treat an estimate as a commitment. The moment estimates
+            become promises, people learn to inflate them, and the honest signal you just worked to
+            get is gone.
+          </p>
+        </section>
+
+        <section>
+          <h2>Common questions</h2>
+
+          <h3>Who should facilitate a planning poker session?</h3>
+          <p>
+            Usually the scrum master or team lead, but it does not have to be a fixed role. The
+            facilitator runs the process rather than the estimates: they present items, keep
+            discussion timeboxed, and call the reveal. They should not push the team toward a
+            particular number.
+          </p>
+
+          <h3>How long should a planning poker session last?</h3>
+          <p>
+            Keep it to sixty to ninety minutes at most. Attention fades after that, and estimates made
+            by a tired team are worse, not more thorough. If the backlog is large, run shorter
+            sessions more often rather than one long marathon.
+          </p>
+
+          <h3>How many items can you estimate in one session?</h3>
+          <p>
+            With discussion timeboxed to a few minutes each, a team can usually estimate ten to twenty
+            items in an hour. Well-refined items that the team already understands go faster; vague
+            ones eat the clock and are a signal to refine before estimating, not during.
+          </p>
+
+          <h3>What do you do when the team can't agree on an estimate?</h3>
+          <p>
+            Have the highest and lowest estimators explain their reasoning, then vote again. Most
+            items converge within two or three rounds. If one does not, either take the higher number
+            and move on, or treat the persistent spread as a sign the item is too big or too vague and
+            should be split or clarified first.
+          </p>
+
+          <h3>Should the product owner vote?</h3>
+          <p>
+            No. The people who will build the work do the estimating, because size and complexity are
+            theirs to judge. The product owner presents the item and answers questions, then watches
+            as an observer. Their job is to clarify scope, not to influence the number.
+          </p>
+        </section>
+
+        <section>
+          <h2>Run your next session here</h2>
+          <p>
+            Point Taken is a free planning poker room built for exactly this: an item queue to work
+            through, roles for voters and observers, an optional reveal timer and auto-reveal to keep
+            the pace, and a record of what the team estimated. No sign-up, no ads, no tracking. Open a
+            room, share the link, and start with your next backlog item.
+          </p>
+          <a class="primary-button" href="/">Start a free planning room</a>
+        </section>
+      </article>
+
+      <footer class="legal-footer">
+        <span>Free · privacy-first · no accounts</span>
+        <a href="/">Home</a>
+        <a href="/what-is-planning-poker">What is planning poker?</a>
+        <a href="/planning-poker-remote-teams">Remote teams</a>
+        <a href="/privacy">Usage &amp; privacy</a>
+        <span>Made by <a href="https://xexio.dev" target="_blank" rel="noopener noreferrer">xexio.dev</a></span>
+      </footer>
+    </main>
+  </body>
+</html>

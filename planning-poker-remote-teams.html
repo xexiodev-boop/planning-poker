@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href="https://pointtaken.team/planning-poker-remote-teams" />
+    <link rel="alternate" hreflang="en" href="https://pointtaken.team/planning-poker-remote-teams" />
+    <link rel="alternate" hreflang="es" href="https://pointtaken.team/es/planning-poker-remote-teams" />
+    <link rel="alternate" hreflang="x-default" href="https://pointtaken.team/planning-poker-remote-teams" />
+    <meta name="theme-color" content="#1c6b4d" />
+    <meta
+      name="description"
+      content="How to run planning poker with a remote or distributed team: the failure modes that quietly ruin estimation over video calls, a step-by-step session guide, and a free online room with a simultaneous reveal."
+    />
+    <link rel="stylesheet" href="/src/styles.css" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Point Taken" />
+    <meta property="og:url" content="https://pointtaken.team/planning-poker-remote-teams" />
+    <meta property="og:title" content="Planning Poker for Remote Teams: How to Run It Online" />
+    <meta
+      property="og:description"
+      content="The failure modes to avoid on video calls, a step-by-step remote session guide, and how an online room replaces the physical deck."
+    />
+    <meta property="og:image" content="https://pointtaken.team/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Point Taken — planning poker without the ceremony" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Planning Poker for Remote Teams: How to Run It Online" />
+    <meta
+      name="twitter:description"
+      content="The failure modes to avoid on video calls, a step-by-step remote session guide, and how an online room replaces the physical deck."
+    />
+    <meta name="twitter:image" content="https://pointtaken.team/og-image.png" />
+
+    <!-- Rich result hints: the article itself plus its FAQ section. Answers
+         must stay in sync with the visible FAQ text below. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Article",
+            "headline": "Planning poker for remote teams",
+            "description": "How to run planning poker with a remote or distributed team: the failure modes to avoid on video calls, a step-by-step session guide, and how an online room replaces the physical deck.",
+            "url": "https://pointtaken.team/planning-poker-remote-teams",
+            "inLanguage": "en",
+            "datePublished": "2026-07-19",
+            "dateModified": "2026-07-19",
+            "author": { "@type": "Person", "name": "xexio.dev", "url": "https://xexio.dev" },
+            "publisher": { "@type": "Organization", "name": "Point Taken", "url": "https://pointtaken.team/" }
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Do you need a special tool for remote planning poker?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "You need something that hides votes until everyone has chosen and then reveals them at once. A shared spreadsheet or chat cannot do that, because the first number posted anchors everyone else. A dedicated online room handles the private vote and simultaneous reveal for you, which is the whole point of the technique."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Should cameras be on during remote estimation?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Cameras help you read hesitation and confusion that a voice call hides, so they are worth keeping on for the discussion. They are not required to vote, though. The estimate comes from the cards, not from faces, so nobody is penalized for turning a camera off."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can planning poker be done asynchronously?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "You can gather first-round votes asynchronously, but the value of planning poker is the conversation that a spread of estimates starts. That conversation is hard to have well in comments across time zones. Prepare and refine items async, then estimate live, even if live is only a short focused call."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How do you keep a remote session from dragging?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Timebox discussion per item to a few minutes, estimate one item at a time, and let the cards reveal as soon as everyone has confirmed instead of waiting on one person. A reveal timer and auto-reveal remove the most repetitive stalls, and anything that turns into a design debate should be parked, not estimated."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What about distributed teams across time zones?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Find one overlapping hour and protect it for estimation, because a live reveal is worth more than perfectly convenient scheduling. Keep the sessions short and frequent rather than long and rare, and use an async backlog refinement pass beforehand so the live time is spent voting, not reading."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+
+    <title>Planning Poker for Remote Teams: How to Run It Online | Point Taken</title>
+  </head>
+  <body>
+    <main class="legal-shell">
+      <header class="legal-header">
+        <a class="brand" href="/">
+          <span class="brand-mark">P</span>
+          <span>Point Taken</span>
+        </a>
+        <nav>
+          <a class="text-button" href="/es/planning-poker-remote-teams" hreflang="es" lang="es">Español</a>
+          <a class="text-button" href="/">← Back to home</a>
+        </nav>
+      </header>
+
+      <article class="legal-article">
+        <p class="eyebrow">Agile estimation, explained</p>
+        <h1>Planning poker for remote teams</h1>
+        <p class="legal-lede">
+          Remote work is where planning poker earns its keep. The technique was built to stop the
+          loudest voice in the room from setting the estimate, and a video call makes that problem
+          worse, not better. Done well, an online room gives a distributed team the same honest,
+          simultaneous reveal you would get around a table, minus the table.
+        </p>
+        <p class="legal-meta">Last updated: 19 July 2026</p>
+
+        <aside class="inline-cta">
+          <p>Estimating with a remote team right now? It's always free, with no sign-up.</p>
+          <a class="primary-button compact" href="/">Create a room</a>
+        </aside>
+
+        <section>
+          <p>
+            New to the technique itself? Start with
+            <a href="/what-is-planning-poker">what is planning poker</a> for the fundamentals, then
+            come back here for how to run it with a team that isn't in the same room.
+          </p>
+        </section>
+
+        <section>
+          <h2>Why estimating over a call quietly breaks</h2>
+          <p>
+            A video call amplifies the exact forces planning poker exists to neutralize:
+          </p>
+          <ul>
+            <li>
+              <strong>Anchoring gets worse.</strong> On a call there is usually one person talking at
+              a time, so the first estimate spoken lands with even more weight. Everyone else adjusts
+              toward it instead of forming an independent view.
+            </li>
+            <li>
+              <strong>Turn-taking hides disagreement.</strong> Interrupting politely over video is
+              hard, so quieter people simply agree to keep things moving. Their doubts, which are
+              often the most valuable signal, never surface.
+            </li>
+            <li>
+              <strong>Attention leaks.</strong> A muted, camera-off participant reading email is
+              invisible. When the session is a round of open discussion, it is easy to check out and
+              rubber-stamp whatever the group lands on.
+            </li>
+          </ul>
+          <p>
+            A private vote followed by a simultaneous reveal fixes all three at once. Everyone has to
+            commit to a number before seeing anyone else's, so there is nothing to anchor on, no way
+            to quietly abstain, and every disagreement becomes visible the moment the cards flip.
+          </p>
+        </section>
+
+        <section>
+          <h2>What an online room replaces</h2>
+          <p>
+            In a physical session the deck of cards does the work: people hold their choice face down,
+            then turn it over together. An online planning poker room replaces that deck, and only
+            that deck. Everyone still needs to be talking, whether that is a video call, a voice
+            channel, or people sitting in two offices on one line. The room handles the part a call
+            cannot: it keeps each vote hidden until the reveal, then shows every card at the same
+            instant.
+          </p>
+          <p>
+            That is the one feature to insist on. A shared spreadsheet or a chat thread cannot hide
+            the first number, and once it is visible the estimate is already contaminated. If a tool
+            reveals votes as they arrive, it is not planning poker; it is a poll with extra steps.
+          </p>
+        </section>
+
+        <section>
+          <h2>How to run a remote session</h2>
+          <ol>
+            <li>
+              <strong>Refine the backlog before the call.</strong> Add the items to estimate ahead of
+              time so the live session is spent voting, not reading. A shared queue of items keeps the
+              session moving from one to the next without hunting for the next ticket.
+            </li>
+            <li>
+              <strong>Get everyone into the same room.</strong> Share one link. Whoever is
+              facilitating opens the room, and each estimator joins from their own device. Observers,
+              such as a product owner or a stakeholder watching, join too but sit out the voting.
+            </li>
+            <li>
+              <strong>Present one item, briefly.</strong> Someone who knows the item explains it in a
+              sentence or two, and the team asks clarifying questions. Keep it short; this is not the
+              design meeting.
+            </li>
+            <li>
+              <strong>Everyone votes privately.</strong> Each person picks a card. Nobody sees the
+              others, and nobody knows who has and hasn't voted beyond a simple confirmed indicator.
+            </li>
+            <li>
+              <strong>Reveal together.</strong> Once everyone has confirmed, the cards flip at once.
+              If the numbers agree, record the estimate and move on. If they don't, the highest and
+              lowest estimators explain their thinking, and you vote again.
+            </li>
+            <li>
+              <strong>Move to the next item.</strong> Most items settle in a round or two. Pull the
+              next one from the queue and repeat.
+            </li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>Keeping a remote session fast</h2>
+          <p>
+            The failure mode of remote estimation is not bad estimates; it is a session that drags
+            until people disengage. A few habits keep it tight:
+          </p>
+          <ul>
+            <li>
+              <strong>Timebox the discussion.</strong> A couple of minutes per item is plenty. Anything
+              that turns into a design debate gets parked and taken offline, not estimated on the spot.
+            </li>
+            <li>
+              <strong>Let the reveal happen on its own.</strong> Waiting for the facilitator to click
+              reveal after everyone has already voted is pure dead time. Auto-reveal turns the cards
+              over the moment the last person confirms.
+            </li>
+            <li>
+              <strong>Use a short reveal timer when discussion is the goal.</strong> A brief delay
+              before the cards can be shown gives everyone a moment to actually think, rather than
+              copying the first person who votes.
+            </li>
+            <li>
+              <strong>Don't re-vote forever.</strong> After two or three rounds without convergence,
+              either take the higher number and move on, or treat the disagreement as a sign the item
+              needs splitting or clarifying before anyone works on it.
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Live or async?</h2>
+          <p>
+            You can collect a first round of votes asynchronously, and for a small, well-understood
+            backlog that is sometimes enough. But the estimate is not the real output of planning
+            poker; the conversation a spread of estimates starts is. That conversation is hard to have
+            well in comments spread across a day and several time zones, where tone is lost and replies
+            arrive hours apart.
+          </p>
+          <p>
+            The reliable pattern for distributed teams is to split the work: refine and clarify items
+            asynchronously, then estimate live in a short, focused session. Even thirty minutes of
+            real overlap beats a day of threaded back-and-forth, because the disagreements get resolved
+            while everyone is present to resolve them.
+          </p>
+        </section>
+
+        <section>
+          <h2>Common questions</h2>
+
+          <h3>Do you need a special tool for remote planning poker?</h3>
+          <p>
+            You need something that hides votes until everyone has chosen and then reveals them at
+            once. A shared spreadsheet or chat cannot do that, because the first number posted anchors
+            everyone else. A dedicated online room handles the private vote and simultaneous reveal for
+            you, which is the whole point of the technique.
+          </p>
+
+          <h3>Should cameras be on during remote estimation?</h3>
+          <p>
+            Cameras help you read hesitation and confusion that a voice call hides, so they are worth
+            keeping on for the discussion. They are not required to vote, though. The estimate comes
+            from the cards, not from faces, so nobody is penalized for turning a camera off.
+          </p>
+
+          <h3>Can planning poker be done asynchronously?</h3>
+          <p>
+            You can gather first-round votes asynchronously, but the value of planning poker is the
+            conversation that a spread of estimates starts. That conversation is hard to have well in
+            comments across time zones. Prepare and refine items async, then estimate live, even if
+            live is only a short focused call.
+          </p>
+
+          <h3>How do you keep a remote session from dragging?</h3>
+          <p>
+            Timebox discussion per item to a few minutes, estimate one item at a time, and let the
+            cards reveal as soon as everyone has confirmed instead of waiting on one person. A reveal
+            timer and auto-reveal remove the most repetitive stalls, and anything that turns into a
+            design debate should be parked, not estimated.
+          </p>
+
+          <h3>What about distributed teams across time zones?</h3>
+          <p>
+            Find one overlapping hour and protect it for estimation, because a live reveal is worth
+            more than perfectly convenient scheduling. Keep the sessions short and frequent rather than
+            long and rare, and use an async backlog refinement pass beforehand so the live time is
+            spent voting, not reading.
+          </p>
+        </section>
+
+        <section>
+          <h2>Try it with your remote team</h2>
+          <p>
+            Point Taken is a free planning poker room built for exactly this: live voting, cards that
+            stay hidden until the reveal, an optional reveal timer and auto-reveal to keep sessions
+            moving, and nothing between your team and an estimate. No sign-up, no ads, no tracking.
+            Open a room, share the link, and start with your next backlog item.
+          </p>
+          <a class="primary-button" href="/">Start a free planning room</a>
+        </section>
+      </article>
+
+      <footer class="legal-footer">
+        <span>Free · privacy-first · no accounts</span>
+        <a href="/">Home</a>
+        <a href="/what-is-planning-poker">What is planning poker?</a>
+        <a href="/how-to-run-planning-poker">Run a session</a>
+        <a href="/privacy">Usage &amp; privacy</a>
+        <span>Made by <a href="https://xexio.dev" target="_blank" rel="noopener noreferrer">xexio.dev</a></span>
+      </footer>
+    </main>
+  </body>
+</html>

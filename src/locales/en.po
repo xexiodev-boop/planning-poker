@@ -758,7 +758,7 @@ msgstr "Login with SSO\n"
 msgid "Lower hand"
 msgstr "Lower hand"
 
-#: src/components/HomePage.jsx:147
+#: src/components/HomePage.jsx:153
 msgid "Made by <0>xexio.dev</0>"
 msgstr "Made by <0>xexio.dev</0>"
 
@@ -1082,6 +1082,10 @@ msgstr "Ready to reveal"
 msgid "Recovery link copied — keep it somewhere safe."
 msgstr "Recovery link copied — keep it somewhere safe."
 
+#: src/components/HomePage.jsx:149
+msgid "Remote teams"
+msgstr "Remote teams"
+
 #: src/components/panels/PeopleList.jsx:165
 msgid "Remove"
 msgstr "Remove"
@@ -1194,6 +1198,10 @@ msgstr "Rooms and everything in them are deleted automatically 7 days after the 
 #: src/components/room/Room.jsx:110
 msgid "Rooms expire after 7 days of inactivity. Any activity keeps them alive."
 msgstr "Rooms expire after 7 days of inactivity. Any activity keeps them alive."
+
+#: src/components/HomePage.jsx:146
+msgid "Run a session"
+msgstr "Run a session"
 
 #: src/components/room/FacilitatorGuide.jsx:53
 msgid "Run your first planning session"
@@ -1491,7 +1499,7 @@ msgstr "Unsupported reveal timer."
 msgid "Unsure"
 msgstr "Unsure"
 
-#: src/components/HomePage.jsx:145
+#: src/components/HomePage.jsx:151
 #: src/components/PrivacyPage.jsx:19
 msgid "Usage & privacy"
 msgstr "Usage & privacy"
