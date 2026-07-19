@@ -16,6 +16,26 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://pointtaken.team/planning-poker-remote-teams</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://pointtaken.team/es/planning-poker-remote-teams</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://pointtaken.team/how-to-run-planning-poker</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://pointtaken.team/es/how-to-run-planning-poker</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://pointtaken.team/privacy</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>

@@ -758,7 +758,7 @@ msgstr "Inicio de sesión con SSO\n"
 msgid "Lower hand"
 msgstr "Bajar la mano"
 
-#: src/components/HomePage.jsx:147
+#: src/components/HomePage.jsx:153
 msgid "Made by <0>xexio.dev</0>"
 msgstr "Hecho por <0>xexio.dev</0>"
 
@@ -1082,6 +1082,10 @@ msgstr "Listo para revelar"
 msgid "Recovery link copied — keep it somewhere safe."
 msgstr "Enlace de recuperación copiado: guárdalo en un lugar seguro."
 
+#: src/components/HomePage.jsx:149
+msgid "Remote teams"
+msgstr "Equipos remotos"
+
 #: src/components/panels/PeopleList.jsx:165
 msgid "Remove"
 msgstr "Quitar"
@@ -1194,6 +1198,10 @@ msgstr "Las salas y todo su contenido se eliminan automáticamente 7 días despu
 #: src/components/room/Room.jsx:110
 msgid "Rooms expire after 7 days of inactivity. Any activity keeps them alive."
 msgstr "Las salas caducan tras 7 días de inactividad. Cualquier actividad las mantiene vivas."
+
+#: src/components/HomePage.jsx:146
+msgid "Run a session"
+msgstr "Dirige una sesión"
 
 #: src/components/room/FacilitatorGuide.jsx:53
 msgid "Run your first planning session"
@@ -1491,7 +1499,7 @@ msgstr "Temporizador de revelado no admitido."
 msgid "Unsure"
 msgstr "No lo veo claro"
 
-#: src/components/HomePage.jsx:145
+#: src/components/HomePage.jsx:151
 #: src/components/PrivacyPage.jsx:19
 msgid "Usage & privacy"
 msgstr "Uso y privacidad"

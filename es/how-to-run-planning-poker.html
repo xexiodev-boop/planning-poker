@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href="https://pointtaken.team/es/how-to-run-planning-poker" />
+    <link rel="alternate" hreflang="en" href="https://pointtaken.team/how-to-run-planning-poker" />
+    <link rel="alternate" hreflang="es" href="https://pointtaken.team/es/how-to-run-planning-poker" />
+    <link rel="alternate" hreflang="x-default" href="https://pointtaken.team/how-to-run-planning-poker" />
+    <meta name="theme-color" content="#1c6b4d" />
+    <meta
+      name="description"
+      content="Guía del facilitador para dirigir una sesión de planning poker: cómo preparar el backlog, montar la sala, llevar cada ronda, gestionar el desacuerdo y mantener el ritmo. Incluye una herramienta gratuita para hacerlo."
+    />
+    <link rel="stylesheet" href="/src/styles.css" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Point Taken" />
+    <meta property="og:url" content="https://pointtaken.team/es/how-to-run-planning-poker" />
+    <meta property="og:title" content="Cómo dirigir una sesión de planning poker: guía del facilitador" />
+    <meta
+      property="og:description"
+      content="Cómo preparar, montar la sala, llevar cada ronda, gestionar el desacuerdo y mantener el ritmo de una sesión de planning poker."
+    />
+    <meta property="og:image" content="https://pointtaken.team/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Point Taken — planning poker sin ceremonia" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Cómo dirigir una sesión de planning poker: guía del facilitador" />
+    <meta
+      name="twitter:description"
+      content="Cómo preparar, montar la sala, llevar cada ronda, gestionar el desacuerdo y mantener el ritmo de una sesión de planning poker."
+    />
+    <meta name="twitter:image" content="https://pointtaken.team/og-image.png" />
+
+    <!-- Rich result hints: el artículo y su sección de preguntas frecuentes.
+         Las respuestas deben coincidir con el texto visible de abajo. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Article",
+            "headline": "Cómo dirigir una sesión de planning poker",
+            "description": "Guía del facilitador para dirigir una sesión de planning poker: cómo preparar el backlog, montar la sala, llevar cada ronda, gestionar el desacuerdo y mantener el ritmo.",
+            "url": "https://pointtaken.team/es/how-to-run-planning-poker",
+            "inLanguage": "es",
+            "datePublished": "2026-07-19",
+            "dateModified": "2026-07-19",
+            "author": { "@type": "Person", "name": "xexio.dev", "url": "https://xexio.dev" },
+            "publisher": { "@type": "Organization", "name": "Point Taken", "url": "https://pointtaken.team/" }
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "¿Quién debería facilitar una sesión de planning poker?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Normalmente el scrum master o el líder del equipo, pero no tiene por qué ser un papel fijo. El facilitador dirige el proceso, no las estimaciones: presenta los elementos, mantiene la conversación acotada en el tiempo y da la orden de revelar. No debe empujar al equipo hacia un número concreto."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "¿Cuánto debería durar una sesión de planning poker?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Que no pase de sesenta a noventa minutos. A partir de ahí la atención cae, y las estimaciones de un equipo cansado son peores, no más minuciosas. Si el backlog es grande, haz sesiones más cortas y más a menudo en lugar de un maratón."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "¿Cuántos elementos se pueden estimar en una sesión?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Con la conversación acotada a unos minutos por elemento, un equipo suele estimar de diez a veinte elementos en una hora. Los elementos bien refinados que el equipo ya entiende van más rápido; los difusos se comen el reloj y son una señal para refinarlos antes de estimar, no durante."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "¿Qué haces cuando el equipo no se pone de acuerdo en una estimación?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Que las personas con la estimación más alta y más baja expliquen su razonamiento y luego se vota de nuevo. La mayoría de los elementos convergen en dos o tres rondas. Si uno no lo hace, o bien tomad el número más alto y seguid, o bien tratad la dispersión persistente como una señal de que el elemento es demasiado grande o difuso y conviene dividirlo o aclararlo primero."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "¿Debería votar el product owner?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "No. Quienes van a construir el trabajo son los que estiman, porque el tamaño y la complejidad les toca juzgarlos a ellos. El product owner presenta el elemento y responde preguntas, y luego mira como observador. Su trabajo es aclarar el alcance, no influir en el número."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+
+    <title>Cómo dirigir una sesión de planning poker: guía del facilitador | Point Taken</title>
+  </head>
+  <body>
+    <main class="legal-shell">
+      <header class="legal-header">
+        <a class="brand" href="/">
+          <span class="brand-mark">P</span>
+          <span>Point Taken</span>
+        </a>
+        <nav>
+          <a class="text-button" href="/how-to-run-planning-poker" hreflang="en" lang="en">In English</a>
+          <a class="text-button" href="/">← Volver al inicio</a>
+        </nav>
+      </header>
+
+      <article class="legal-article">
+        <p class="eyebrow">Estimación ágil, explicada</p>
+        <h1>Cómo dirigir una sesión de planning poker</h1>
+        <p class="legal-lede">
+          Una buena sesión de planning poker es, sobre todo, buena facilitación. La mecánica es
+          sencilla: presentas un elemento, todos votan, se giran las cartas, se comenta y se repite.
+          Lo que marca la diferencia es cómo te preparas, cómo gestionas el desacuerdo y con cuánta
+          disciplina mantienes el ritmo. Esta es la guía del facilitador.
+        </p>
+        <p class="legal-meta">Última actualización: 19 de julio de 2026</p>
+
+        <aside class="inline-cta">
+          <p>¿Diriges una sesión hoy? Es gratis y sin registro.</p>
+          <a class="primary-button compact" href="/">Crear una sala</a>
+        </aside>
+
+        <section>
+          <p>
+            Si eres nuevo en la técnica, lee antes
+            <a href="/es/what-is-planning-poker">qué es planning poker</a>. Si tu equipo está
+            distribuido, combínalo con la guía de
+            <a href="/es/planning-poker-remote-teams">planning poker para equipos remotos</a>. Esta
+            página da por hecho que conoces lo básico y quieres dirigir una sesión bien.
+          </p>
+        </section>
+
+        <section>
+          <h2>Antes de la sesión</h2>
+          <p>
+            La mayoría de las sesiones que se alargan estaban perdidas antes de empezar. La
+            preparación es breve, pero importa:
+          </p>
+          <ul>
+            <li>
+              <strong>Refina el backlog primero.</strong> La estimación no es el sitio para descubrir
+              que un elemento no tiene criterios de aceptación. Los elementos deben estar lo bastante
+              claros como para que el equipo los dimensione tras una o dos frases de contexto. Lo que
+              todavía hay que diseñar no está listo para estimar.
+            </li>
+            <li>
+              <strong>Encola los elementos con antelación.</strong> Decide qué elementos vas a estimar
+              y en qué orden, para que la sesión fluya de uno al siguiente en lugar de frenarse
+              mientras todos buscan el próximo ticket.
+            </li>
+            <li>
+              <strong>Decide quién vota.</strong> Quienes van a construir el trabajo lo estiman. Los
+              interesados y el product owner asisten como observadores para dar contexto, no para
+              votar.
+            </li>
+            <li>
+              <strong>Elige la baraja.</strong> Una secuencia tipo Fibonacci es la opción habitual.
+              Acordad la escala antes de empezar para que nadie esté usando otra en silencio.
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Montar la sala</h2>
+          <p>
+            Ya sea alrededor de una mesa o en una sala online, tres papeles mantienen limpia la
+            sesión:
+          </p>
+          <ul>
+            <li>
+              <strong>El facilitador</strong> dirige el proceso. Presenta los elementos, mantiene la
+              conversación acotada, da la orden de revelar y registra la estimación acordada. Y algo
+              clave: dirige el proceso, no las estimaciones. Un facilitador que defiende un número ha
+              dejado de facilitar.
+            </li>
+            <li>
+              <strong>Los votantes</strong> son todos los que van a hacer el trabajo. Cada uno tiene la
+              baraja y vota cada elemento.
+            </li>
+            <li>
+              <strong>Los observadores</strong> son el product owner y los interesados. Presentan los
+              elementos y responden preguntas, y luego se quedan fuera del voto para no anclarlo.
+            </li>
+          </ul>
+          <p>
+            En una sala online, define estos papeles desde el principio. Marcar al product owner como
+            observador, por ejemplo, lo mantiene en la conversación sin que su carta pese en el
+            resultado.
+          </p>
+        </section>
+
+        <section>
+          <h2>Llevar una ronda</h2>
+          <ol>
+            <li>
+              <strong>Presenta el elemento.</strong> Alguien que lo conozca, normalmente el product
+              owner, lo explica en una o dos frases. El equipo hace preguntas. Que sea corto.
+            </li>
+            <li>
+              <strong>Todos votan en privado.</strong> Cada votante elige una carta sin ver la de los
+              demás. Un breve retraso antes de habilitar el revelado le da a cada uno un momento para
+              pensar de verdad en lugar de copiar el primer voto.
+            </li>
+            <li>
+              <strong>Revelad a la vez.</strong> Todas las cartas se giran a la vez. Dejar que el
+              revelado ocurra solo en cuanto todos han confirmado elimina un clic repetitivo y un
+              instante de tiempo muerto.
+            </li>
+            <li>
+              <strong>Lee la dispersión.</strong> Si los números coinciden, registra la estimación y
+              sigue. Si no, ese hueco es justo el sentido del ejercicio.
+            </li>
+            <li>
+              <strong>Comentad y volved a votar.</strong> Las personas con la estimación más alta y más
+              baja explican su razonamiento, el equipo lo asimila y todos votan otra vez.
+            </li>
+            <li>
+              <strong>Cierra.</strong> Registra el número acordado y coge el siguiente elemento de la
+              cola.
+            </li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>Gestionar el desacuerdo</h2>
+          <p>
+            Una dispersión de estimaciones no es un fracaso de la sesión; es la razón de que la sesión
+            exista. Casi siempre significa que cada uno está imaginando un trabajo distinto. Una
+            persona daba por hecho que se podía reutilizar un componente existente; otra sabía que hay
+            que rehacerlo. Sacar ese hueco a la luz antes del sprint vale mucho más que el número en
+            sí.
+          </p>
+          <p>
+            La jugada es siempre la misma: los extremos explican, el equipo aprende algo y se vota otra
+            vez. Pero no dejes que un solo elemento se convierta en un agujero negro. Tras dos o tres
+            rondas sin converger, o bien tomad la estimación más alta y seguid, o bien tratad el
+            desacuerdo persistente como una señal: el elemento probablemente es demasiado grande o
+            demasiado difuso, y conviene dividirlo o aclararlo antes de que nadie se comprometa con él.
+          </p>
+        </section>
+
+        <section>
+          <h2>Las cartas especiales</h2>
+          <p>
+            Casi todas las barajas incluyen dos cartas que no son números, y conviene tomarse ambas en
+            serio cuando aparecen:
+          </p>
+          <ul>
+            <li>
+              <strong>El interrogante</strong> significa «no puedo estimar esto sin más información».
+              Varios en un mismo elemento son una señal clara de que hay que refinarlo, no estimarlo.
+              Devuélvelo.
+            </li>
+            <li>
+              <strong>La taza de café</strong> significa «necesito un descanso». Una sesión pasada de
+              la hora produce estimaciones peores, no más. Haced el descanso.
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Mantener el ritmo</h2>
+          <p>
+            La forma más común de que una sesión fracase no son las malas estimaciones; es perder a la
+            sala en una sesión que se alarga. Unas cuantas reglas la protegen:
+          </p>
+          <ul>
+            <li>Acota la conversación a unos minutos por elemento y aparca cualquier cosa que se convierta en un debate de diseño.</li>
+            <li>Estima de uno en uno para que la atención del equipo tenga un solo foco.</li>
+            <li>Mantén la sesión entera entre sesenta y noventa minutos; reparte un backlog grande en varias sesiones más cortas.</li>
+            <li>No reabras elementos ya cerrados. Una vez registrado un número, sigue adelante.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Después de la sesión</h2>
+          <p>
+            Las estimaciones que acabas de hacer son <strong>puntos de historia</strong>: tamaños
+            relativos, no horas ni fechas de entrega. Al cabo de unos sprints, la velocidad medida del
+            equipo convierte esos puntos en un pronóstico de calendario con mucha más fiabilidad que
+            cualquier cálculo de horas por adelantado. Resiste la tentación de convertir puntos en
+            horas o de tratar una estimación como un compromiso. En cuanto las estimaciones se vuelven
+            promesas, la gente aprende a inflarlas, y la señal honesta que acabas de trabajar para
+            conseguir desaparece.
+          </p>
+        </section>
+
+        <section>
+          <h2>Preguntas frecuentes</h2>
+
+          <h3>¿Quién debería facilitar una sesión de planning poker?</h3>
+          <p>
+            Normalmente el scrum master o el líder del equipo, pero no tiene por qué ser un papel fijo.
+            El facilitador dirige el proceso, no las estimaciones: presenta los elementos, mantiene la
+            conversación acotada en el tiempo y da la orden de revelar. No debe empujar al equipo hacia
+            un número concreto.
+          </p>
+
+          <h3>¿Cuánto debería durar una sesión de planning poker?</h3>
+          <p>
+            Que no pase de sesenta a noventa minutos. A partir de ahí la atención cae, y las
+            estimaciones de un equipo cansado son peores, no más minuciosas. Si el backlog es grande,
+            haz sesiones más cortas y más a menudo en lugar de un maratón.
+          </p>
+
+          <h3>¿Cuántos elementos se pueden estimar en una sesión?</h3>
+          <p>
+            Con la conversación acotada a unos minutos por elemento, un equipo suele estimar de diez a
+            veinte elementos en una hora. Los elementos bien refinados que el equipo ya entiende van
+            más rápido; los difusos se comen el reloj y son una señal para refinarlos antes de estimar,
+            no durante.
+          </p>
+
+          <h3>¿Qué haces cuando el equipo no se pone de acuerdo en una estimación?</h3>
+          <p>
+            Que las personas con la estimación más alta y más baja expliquen su razonamiento y luego se
+            vota de nuevo. La mayoría de los elementos convergen en dos o tres rondas. Si uno no lo
+            hace, o bien tomad el número más alto y seguid, o bien tratad la dispersión persistente como
+            una señal de que el elemento es demasiado grande o difuso y conviene dividirlo o aclararlo
+            primero.
+          </p>
+
+          <h3>¿Debería votar el product owner?</h3>
+          <p>
+            No. Quienes van a construir el trabajo son los que estiman, porque el tamaño y la
+            complejidad les toca juzgarlos a ellos. El product owner presenta el elemento y responde
+            preguntas, y luego mira como observador. Su trabajo es aclarar el alcance, no influir en el
+            número.
+          </p>
+        </section>
+
+        <section>
+          <h2>Dirige aquí tu próxima sesión</h2>
+          <p>
+            Point Taken es una sala de planning poker gratuita hecha exactamente para esto: una cola de
+            elementos que ir resolviendo, papeles para votantes y observadores, un temporizador de
+            revelado y revelado automático opcionales para mantener el ritmo, y un registro de lo que el
+            equipo estimó. Sin registro, sin anuncios, sin rastreo. Abre una sala, comparte el enlace y
+            empezad con el siguiente elemento de vuestro backlog.
+          </p>
+          <a class="primary-button" href="/">Crear una sala gratis</a>
+        </section>
+      </article>
+
+      <footer class="legal-footer">
+        <span>Gratis · privacidad ante todo · sin cuentas</span>
+        <a href="/">Inicio</a>
+        <a href="/es/what-is-planning-poker">¿Qué es planning poker?</a>
+        <a href="/es/planning-poker-remote-teams">Equipos remotos</a>
+        <a href="/privacy">Uso y privacidad</a>
+        <span>Hecho por <a href="https://xexio.dev" target="_blank" rel="noopener noreferrer">xexio.dev</a></span>
+      </footer>
+    </main>
+  </body>
+</html>

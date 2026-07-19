@@ -142,6 +142,12 @@ export function HomePage() {
         <a href={i18n.locale === "es" ? "/es/what-is-planning-poker" : "/what-is-planning-poker"}>
           <Trans>What is planning poker?</Trans>
         </a>
+        <a href={i18n.locale === "es" ? "/es/how-to-run-planning-poker" : "/how-to-run-planning-poker"}>
+          <Trans>Run a session</Trans>
+        </a>
+        <a href={i18n.locale === "es" ? "/es/planning-poker-remote-teams" : "/planning-poker-remote-teams"}>
+          <Trans>Remote teams</Trans>
+        </a>
         <a href="/privacy"><Trans>Usage &amp; privacy</Trans></a>
         <LanguageSwitcher />
         <span><Trans>Made by <a href="https://xexio.dev" target="_blank" rel="noopener noreferrer">xexio.dev</a></Trans></span>
