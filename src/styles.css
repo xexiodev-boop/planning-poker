@@ -252,6 +252,8 @@ legend { margin-bottom: 6px; }
 }
 .home-footer a { color: var(--green); font-weight: 700; }
 .home-footer a:hover { text-decoration: underline; }
+.home-footer a.github-link { display: inline-flex; align-items: center; gap: 5px; }
+.home-footer a.github-link svg { flex: 0 0 auto; }
 
 .language-switcher { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); font-size: 12px; font-weight: 600; }
 .language-switcher-globe { width: 15px; height: 15px; flex: 0 0 auto; }
